@@ -5,11 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>es.upv.posgrado</groupId>
-        <artifactId>parent-project</artifactId>
+        <artifactId>injector-connectors</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-
-    <artifactId>injector-connectors</artifactId>
+    <artifactId>injector-connectors-common</artifactId>
 
     <dependencies>
         <dependency>

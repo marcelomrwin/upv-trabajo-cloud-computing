@@ -26,9 +26,9 @@
 
     <modules>
         <module>injector</module>
-        <module>injector-connectors</module>
-        <module>injector-connectors-newsapi</module>
-        <module>injector-connectors-mediastack</module>
+<!--        <module>injector-connectors</module>-->
+<!--        <module>injector-connectors-newsapi</module>-->
+<!--        <module>injector-connectors-mediastack</module>-->
         <module>executor</module>
         <module>common</module>
         <module>api</module>
