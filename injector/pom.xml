@@ -16,11 +16,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>es.upv.posgrado</groupId>
-                <artifactId>injector-connectors</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>es.upv.posgrado</groupId>

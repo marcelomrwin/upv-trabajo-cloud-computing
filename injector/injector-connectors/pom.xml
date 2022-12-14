@@ -17,27 +17,4 @@
         <module>injector-connectors-common</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>es.upv.posgrado</groupId>
-                <artifactId>injector-connectors-common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>es.upv.posgrado</groupId>
-                <artifactId>injector-connectors-newsapi</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>es.upv.posgrado</groupId>
-                <artifactId>injector-connectors-mediastack</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-
 </project>

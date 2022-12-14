@@ -15,10 +15,6 @@
     </dependency>
     <dependency>
       <groupId>es.upv.posgrado</groupId>
-      <artifactId>injector-connectors-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>es.upv.posgrado</groupId>
       <artifactId>injector-connectors-newsapi</artifactId>
     </dependency>
     <dependency>
