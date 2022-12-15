@@ -3,13 +3,16 @@ package es.upv.posgrado.executor.service;
 import es.upv.posgrado.executor.client.git.GitClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
-@Singleton
+@ApplicationScoped
 public class ScriptExecutor {
 
     @Inject
@@ -18,6 +21,7 @@ public class ScriptExecutor {
     @Inject
     @ConfigProperty(name = "script.name")
     String scriptName;
+
 
     public String executeScriptCommand(String jsonParameterPath) throws Exception {
 

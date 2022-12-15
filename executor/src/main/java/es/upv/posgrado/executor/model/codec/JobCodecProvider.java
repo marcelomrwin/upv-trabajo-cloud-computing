@@ -9,7 +9,7 @@ public class JobCodecProvider implements CodecProvider {
     @Override
     public <T> Codec<T> get(Class<T> aClass, CodecRegistry codecRegistry) {
         if (aClass.equals(Job.class)){
-            return (Codec<T>) new Job();
+            return (Codec<T>) new JobCodec();
         }
         return null;
     }

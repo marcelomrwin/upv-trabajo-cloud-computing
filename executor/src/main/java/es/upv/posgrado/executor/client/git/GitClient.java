@@ -10,33 +10,32 @@ import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
-@ApplicationScoped
+//@ApplicationScoped
+@RequestScoped
 @Slf4j
 public class GitClient {
 
+    static final String REF_TAG_PREFIX = "refs/tags/";
     @Inject
     @ConfigProperty(name = "script.repo.url")
     String scriptRepoUrl;
-
     @Inject
     @ConfigProperty(name = "script.repo.tag")
     String scriptRepoTag;
-
     @Inject
     @ConfigProperty(name = "script.clonepath")
     String cloneDirectoryPath;
 
-    static final String REF_TAG_PREFIX = "refs/tags/";
-
     public String cloneRepo() throws GitAPIException, IOException {
         File path = new File(cloneDirectoryPath);
-        if (path.exists()) {
+        if (new File(path,".git").exists()) {
             //verify if the last tag is already cloned
             Repository repository = Git.open(path).getRepository();
             Ref ref = repository.findRef(scriptRepoTag);
@@ -51,10 +50,12 @@ public class GitClient {
 
         // Check if the requested tag exists in remote repository
         Map<String, Ref> refMap = Git.lsRemoteRepository().setRemote(scriptRepoUrl).setHeads(true).setTags(true).callAsMap();
-        if (!refMap.containsKey(REF_TAG_PREFIX+scriptRepoTag))
+        if (!refMap.containsKey(REF_TAG_PREFIX + scriptRepoTag))
             throw new InvalidTagNameException("Tag " + scriptRepoTag + " does not exists on remote repository");
-        try (Git git = Git.cloneRepository().setURI(scriptRepoUrl).setDirectory(path).setTagOption(TagOpt.FETCH_TAGS).call()) {
-            return cloneDirectoryPath;
-        }
+
+        Git.cloneRepository().setURI(scriptRepoUrl).setDirectory(path).setTagOption(TagOpt.FETCH_TAGS).call().close();
+
+        return cloneDirectoryPath;
+
     }
 }

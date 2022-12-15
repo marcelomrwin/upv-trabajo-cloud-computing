@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
 
   mongodb-executor:
-    image: mongo:6.0.3
+    image: mongo:5.0
     container_name: mongodb-executor
     hostname: mongodb-executor
     restart: always
@@ -31,8 +31,13 @@ services:
       - TZ=Europe/Madrid
       - MONGO_INITDB_ROOT_USERNAME=mongoadmin
       - MONGO_INITDB_ROOT_PASSWORD=mongopasswd
+      - MONGO_INITDB_DATABASE=executordb
+      - DB_NAME=executordb
+      - DB_USER=mongoadmin
+      - DB_PASSWORD=mongopasswd
     volumes:
       - mongoexecutor_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
   mongo-express:
     image: mongo-express

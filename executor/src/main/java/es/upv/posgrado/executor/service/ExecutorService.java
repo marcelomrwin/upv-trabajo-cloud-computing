@@ -2,16 +2,17 @@ package es.upv.posgrado.executor.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.upv.posgrado.common.model.Job;
+import es.upv.posgrado.common.model.JobStatus;
 import es.upv.posgrado.executor.client.injector.InjectorRestClient;
 import es.upv.posgrado.executor.client.injector.model.NewsDTO;
+import es.upv.posgrado.executor.client.messaging.KafkaProducer;
 import es.upv.posgrado.executor.model.LocalJobDTO;
 import es.upv.posgrado.executor.repository.ExecutorJobRepository;
-import io.quarkus.vertx.ConsumeEvent;
-import io.vertx.mutiny.core.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.File;
@@ -42,26 +43,32 @@ public class ExecutorService {
     ImageProcessorService imageProcessorService;
 
     @Inject
-    EventBus eventBus;
+    KafkaProducer kafkaProducer;
 
-    @ConsumeEvent("job-request")
+    @Transactional
     public void consumeJobEvent(Job job) {
         try {
+            executorJobRepository.saveJob(job);
             Long id = Long.valueOf(job.getId());
             NewsDTO newsDTO = injectorRestClient.getNewsById(id);
             String result = generateData(id, newsDTO.getTitle(), newsDTO.getDescription(), newsDTO.getGeneratedAt(), newsDTO.getPublishedAt(), newsDTO.getUrlToImage());
             job.setResult(result);
             job.setProcessedBy(getHostname());
             job.setProcessedAt(LocalDateTime.now());
-
-            eventBus.<Job>requestAndForget("job-response",job);
+            job.setStatus(JobStatus.FINISHED);
+            kafkaProducer.sendMessage(job);
 
         } catch (Exception e) {
             log.error("Error processing Job Request", e);
-            //add to a dead leader channel?
+            job.setResult("Error processing Job Request\n"+e.getMessage());
+            job.setStatus(JobStatus.FINISHED);
+            job.setProcessedBy(getHostname());
+            job.setProcessedAt(LocalDateTime.now());
+            kafkaProducer.sendMessage(job);
         }
     }
 
+    @ActivateRequestContext
     public String generateData(Long id, String title, String description, LocalDateTime generatedAt, LocalDateTime publishedAt, String imageURL) throws Exception {
         LocalJobDTO localJobDTO = LocalJobDTO.builder().id(id).title(title).description(description)
                 .generatedAt(generatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
@@ -83,8 +90,4 @@ public class ExecutorService {
         }
     }
 
-    @Transactional
-    public void saveJob(Job job) {
-        executorJobRepository.saveJob(job);
-    }
 }

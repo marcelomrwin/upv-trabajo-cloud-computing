@@ -22,6 +22,6 @@ public class ExecutorJobRepository {
     }
 
     private MongoCollection<Job> getJobCollection() {
-        return mongoClient.getDatabase(jobDatabaseName).getCollection("job", Job.class);
+        return mongoClient.getDatabase(jobDatabaseName).getCollection("jobs", Job.class);
     }
 }

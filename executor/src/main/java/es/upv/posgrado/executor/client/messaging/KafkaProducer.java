@@ -1,7 +1,6 @@
 package es.upv.posgrado.executor.client.messaging;
 
 import es.upv.posgrado.common.model.Job;
-import io.quarkus.vertx.ConsumeEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -19,11 +18,6 @@ public class KafkaProducer {
 
     @ConfigProperty(name = "mp.messaging.outgoing.job-out.topic", defaultValue = "job-response")
     String jobResponseTopic;
-
-    @ConsumeEvent("job-response")
-    public void consumeJobResponseEvent(Job job){
-        sendMessage(job);
-    }
 
     //FAULT TOLERANCE (NETWORKING)
     public void sendMessage(Job job) {
