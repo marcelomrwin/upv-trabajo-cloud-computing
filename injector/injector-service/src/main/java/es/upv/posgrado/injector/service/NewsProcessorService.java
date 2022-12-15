@@ -16,7 +16,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
+import javax.persistence.PersistenceException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
@@ -50,21 +52,31 @@ public class NewsProcessorService {
     @Inject
     ObjectMapper objectMapper;
 
-    @Transactional
+    @Inject
+    TransactionManager transactionManager;
+
+    //    @Transactional
     public void saveNewsFromArticle(Set<NewsDTO> newsDTOSet) {
         if (!newsDTOSet.isEmpty()) {
             for (NewsDTO newsDTO : newsDTOSet) {
+
+                if (News.findByTitle(newsDTO.getTitle()).isPresent())
+                    continue;
+
                 News newsEntity = News.builder().title(newsDTO.getTitle()).description(newsDTO.getDescription()).publishedAt(newsDTO.getPublishedAt()).generatedAt(LocalDateTime.now()).build();
                 String urlToImage = downloadArticleImage(newsDTO.getUrlToImage());
                 if (urlToImage != null) {
                     newsEntity.setUrlToImage(urlToImage);
-                    log.info("Proceeding to save News {}", newsEntity.getTitle());
-                    newsEntity.persist();
-                    RecentNewsDTO recentNewsDTO = RecentNewsDTO.builder().id(newsEntity.id).title(newsEntity.getTitle()).publishedAt(newsEntity.getPublishedAt()).build();
+
                     try {
+                        log.info("Proceeding to save News {}", newsEntity.getTitle());
+                        transactionManager.begin();
+                        newsEntity.persistAndFlush();
+                        transactionManager.commit();
+                        RecentNewsDTO recentNewsDTO = RecentNewsDTO.builder().id(newsEntity.id).title(newsEntity.getTitle()).publishedAt(newsEntity.getPublishedAt()).build();
                         ProducerRecord<String, String> record = new ProducerRecord<>(topicName, String.valueOf(recentNewsDTO.getId()), objectMapper.writeValueAsString(recentNewsDTO));
-                        producer.send(record,(recordMetadata,e)->{
-                            if (e==null){
+                        producer.send(record, (recordMetadata, e) -> {
+                            if (e == null) {
                                 // the record was successfully sent
                                 log.info("Received new metadata. \n" +
                                         "Topic:" + recordMetadata.topic() + "\n" +
@@ -72,11 +84,18 @@ public class NewsProcessorService {
                                         "Partition: " + recordMetadata.partition() + "\n" +
                                         "Offset: " + recordMetadata.offset() + "\n" +
                                         "Timestamp: " + recordMetadata.timestamp());
-                            }else{
-                                log.error("Error while producing message to kafka cluster",e);
+                            } else {
+                                log.error("Error while producing message to kafka cluster", e);
                             }
                         });
 
+                    } catch (PersistenceException e) {
+                        log.error("Fail in persistence layer", e);
+                        try {
+                            transactionManager.rollback();
+                        } catch (SystemException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     } finally {

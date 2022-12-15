@@ -1,5 +1,6 @@
-package es.upv.posgrado.executor.client.injector.model;
+package es.upv.posgrado.executor.client.injector;
 
+import es.upv.posgrado.executor.client.injector.model.NewsDTO;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 

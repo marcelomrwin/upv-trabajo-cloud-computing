@@ -34,7 +34,7 @@ public class NewsApiConnectorService implements NewsService {
 
     @Override
     @Timeout(value = 5,unit = ChronoUnit.SECONDS)
-    @Retry(maxRetries = 2)
+    @Retry(maxRetries = 1)
     @CircuitBreaker(requestVolumeThreshold = 4)
     public Set<NewsDTO> getNews() {
         Set<NewsDTO> newsDTOSet = new HashSet<>();

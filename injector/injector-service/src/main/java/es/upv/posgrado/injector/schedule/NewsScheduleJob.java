@@ -43,6 +43,8 @@ public class NewsScheduleJob {
             processorService.saveNewsFromArticle(newsDTOSet);
         } catch (CircuitBreakerOpenException circuitBreakerOpenException) {
             log.error("Service unavailable!!");
+        }catch (Exception e){
+            log.error("Receive a unexpected exception",e);
         }
     }
 

@@ -1,4 +1,4 @@
-package es.upv.posgrado.executor;
+package es.upv.posgrado.executor.service;
 
 import es.upv.posgrado.executor.client.git.GitClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

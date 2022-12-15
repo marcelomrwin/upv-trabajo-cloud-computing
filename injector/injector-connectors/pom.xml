@@ -12,9 +12,9 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>injector-connectors-common</module>
         <module>injector-connectors-newsapi</module>
         <module>injector-connectors-mediastack</module>
-        <module>injector-connectors-common</module>
     </modules>
 
 </project>

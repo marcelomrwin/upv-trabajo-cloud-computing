@@ -1,8 +1,7 @@
-package es.upv.posgrado.api.service;
+package es.upv.posgrado.executor.client.messaging;
 
-import es.upv.posgrado.api.model.HotNews;
-import es.upv.posgrado.api.model.Job;
-import es.upv.posgrado.common.model.JobStatus;
+import es.upv.posgrado.common.model.Job;
+import io.quarkus.vertx.ConsumeEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -10,36 +9,26 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 
 @ApplicationScoped
 @Slf4j
-public class ApiService {
+public class KafkaProducer {
 
     @Inject
     Producer<String, Job> producer;
 
-    @ConfigProperty(name = "app.kafka.topic.job.out.name", defaultValue = "job-request")
-    String jobRequestTopicName;
+    @ConfigProperty(name = "mp.messaging.outgoing.job-out.topic", defaultValue = "job-response")
+    String jobResponseTopic;
 
-    @Transactional
-    public void saveHotNews(HotNews hotNews){
-        hotNews.persist();
+    @ConsumeEvent("job-response")
+    public void consumeJobResponseEvent(Job job){
+        sendMessage(job);
     }
 
-    @Transactional
-    public Job createJob(HotNews hotNews) {
-
-        Job job = Job.builder().id(hotNews.getId())
-                .title(hotNews.getTitle()).status(JobStatus.SUBMITTED)
-                .requestedAt(LocalDateTime.now())
-                .publishedAt(hotNews.getPublishedAt()).build();
-
-        job.persist();
-
+    //FAULT TOLERANCE (NETWORKING)
+    public void sendMessage(Job job) {
         try {
-            ProducerRecord<String, Job> record = new ProducerRecord<>(jobRequestTopicName, String.valueOf(job.getId()), job);
+            ProducerRecord<String, Job> record = new ProducerRecord<>(jobResponseTopic,job.getId(), job);
             producer.send(record, (recordMetadata, e) -> {
                 if (e == null) {
                     // the record was successfully sent
@@ -59,7 +48,5 @@ public class ApiService {
         } finally {
             producer.flush();
         }
-
-        return job;
     }
 }

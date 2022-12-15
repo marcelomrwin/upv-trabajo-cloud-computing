@@ -19,19 +19,33 @@ services:
     volumes:
       - minion_data:/data
     restart: unless-stopped
-  postgres-executor:
-    image: postgres:13
-    container_name: postgres-executor
-    hostname: postgres-executor
+
+  mongodb-executor:
+    image: mongo:6.0.3
+    container_name: mongodb-executor
+    hostname: mongodb-executor
+    restart: always
     ports:
-      - 5432:5432
+      - 27017:27017
     environment:
       - TZ=Europe/Madrid
-      - POSTGRES_DB=executordb
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - MONGO_INITDB_ROOT_USERNAME=mongoadmin
+      - MONGO_INITDB_ROOT_PASSWORD=mongopasswd
     volumes:
-      - pgexecutor_data:/var/lib/postgresql/data
+      - mongoexecutor_data:/data/db
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 9081:8081
+    depends_on:
+      - mongodb-executor
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: mongoadmin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: mongopasswd
+      ME_CONFIG_MONGODB_URL: mongodb://mongoadmin:mongopasswd@mongodb-executor:27017/
+
   postgres-injector:
     image: postgres:13
     container_name: postgres-injector
@@ -45,6 +59,7 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - pginjector_data:/var/lib/postgresql/data
+
   postgres-api:
     image: postgres:13
     container_name: postgres-api
@@ -58,6 +73,7 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - pgapi_data:/var/lib/postgresql/data
+
   pgadmin:
     container_name: pgadmin4
     image: dpage/pgadmin4:6
@@ -70,12 +86,12 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     depends_on:
       - postgres-injector
-      - postgres-executor
       - postgres-api
     ports:
-      - "5050:80"
+      - "9082:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.8
     container_name: zookeeper
@@ -85,9 +101,9 @@ services:
       - "zookeeper_data:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-      - ZOOKEEPER_CLIENT_PORT=2181
     networks:
       - kafka_network
+
   kafka:
     image: docker.io/bitnami/kafka:3.3
     container_name: kafka
@@ -108,6 +124,7 @@ services:
       - zookeeper
     networks:
       - kafka_network
+
   kafka-ui:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
@@ -122,9 +139,10 @@ services:
       KAFKA_CLUSTERS_0_METRICS_PORT: 9997
     networks:
       - kafka_network
+
 volumes:
   minion_data:
-  pgexecutor_data:
+  mongoexecutor_data:
   pginjector_data:
   pgapi_data:
   pgadmin_data:

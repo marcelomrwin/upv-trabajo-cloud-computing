@@ -3,11 +3,9 @@ package es.upv.posgrado.executor.model;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Builder
 @Data
-public class JobDTO {
+public class LocalJobDTO {
     private Long id;
     private String title;
     private String description;
