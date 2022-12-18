@@ -54,6 +54,8 @@ public class KafkaConfig {
         // Acknowledgement
         props.putIfAbsent(ProducerConfig.ACKS_CONFIG, acks);
 
+        props.putIfAbsent(ProducerConfig.MAX_REQUEST_SIZE_CONFIG,3719907);
+
         return new KafkaProducer<>(props);
     }
 }

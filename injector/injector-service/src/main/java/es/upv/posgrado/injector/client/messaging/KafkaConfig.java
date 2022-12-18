@@ -1,4 +1,4 @@
-package es.upv.posgrado.injector.config;
+package es.upv.posgrado.injector.client.messaging;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;

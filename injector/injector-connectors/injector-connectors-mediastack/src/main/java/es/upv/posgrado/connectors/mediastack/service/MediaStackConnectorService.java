@@ -51,7 +51,7 @@ public class MediaStackConnectorService implements NewsService {
 
         } catch (Exception e) {
             offset=0;
-            log.error("Fail getting news from MediaStack", e);
+            log.error("Fail getting news from MediaStack\n{}", e.getMessage());
             throw new RuntimeException(e);
         }
         return newsDTOSet;

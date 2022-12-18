@@ -1,4 +1,4 @@
-package es.upv.posgrado.injector.resources;
+package es.upv.posgrado.injector.client.storage;
 
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
@@ -14,7 +14,7 @@ import javax.enterprise.inject.Produces;
 
 @Slf4j
 @ApplicationScoped
-public class Resources {
+public class BlockStorageClient {
     @ConfigProperty(name = "minio.bucket")
     String newsBucket;
 

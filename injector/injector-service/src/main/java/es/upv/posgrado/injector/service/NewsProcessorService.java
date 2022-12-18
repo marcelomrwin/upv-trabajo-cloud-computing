@@ -1,26 +1,19 @@
 package es.upv.posgrado.injector.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import es.upv.posgrado.common.model.RecentNewsDTO;
+import es.upv.posgrado.client.shell.CommandExecutor;
 import es.upv.posgrado.connectors.model.NewsDTO;
+import es.upv.posgrado.injector.client.messaging.KafkaClient;
+import es.upv.posgrado.injector.client.storage.MinioClient;
 import es.upv.posgrado.injector.model.News;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MinioClient;
 import io.minio.ObjectWriteResponse;
-import io.minio.UploadObjectArgs;
-import io.minio.http.Method;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -29,33 +22,25 @@ import java.nio.channels.ReadableByteChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @ApplicationScoped
 public class NewsProcessorService {
 
-    @ConfigProperty(name = "minio.endpoint")
-    String minioEndpoint;
-    @ConfigProperty(name = "minio.bucket")
-    String newsBucket;
+    @Inject
+    KafkaClient kafkaClient;
 
-    @ConfigProperty(name = "app.kafka.topic.name", defaultValue = "recent-news")
-    String topicName;
     @Inject
     MinioClient minioClient;
 
     @Inject
-    Producer<String, String> producer;
-
-    @Inject
-    ObjectMapper objectMapper;
-
-    @Inject
     TransactionManager transactionManager;
 
-    //    @Transactional
+
     public void saveNewsFromArticle(Set<NewsDTO> newsDTOSet) {
         if (!newsDTOSet.isEmpty()) {
             for (NewsDTO newsDTO : newsDTOSet) {
@@ -63,52 +48,42 @@ public class NewsProcessorService {
                 if (News.findByTitle(newsDTO.getTitle()).isPresent())
                     continue;
 
-                News newsEntity = News.builder().title(newsDTO.getTitle()).description(newsDTO.getDescription()).publishedAt(newsDTO.getPublishedAt()).generatedAt(LocalDateTime.now()).build();
-                String urlToImage = downloadArticleImage(newsDTO.getUrlToImage());
-                if (urlToImage != null) {
-                    newsEntity.setUrlToImage(urlToImage);
-
-                    try {
-                        log.info("Proceeding to save News {}", newsEntity.getTitle());
-                        transactionManager.begin();
-                        newsEntity.persistAndFlush();
-                        transactionManager.commit();
-                        RecentNewsDTO recentNewsDTO = RecentNewsDTO.builder().id(newsEntity.id).title(newsEntity.getTitle()).publishedAt(newsEntity.getPublishedAt()).build();
-                        ProducerRecord<String, String> record = new ProducerRecord<>(topicName, String.valueOf(recentNewsDTO.getId()), objectMapper.writeValueAsString(recentNewsDTO));
-                        producer.send(record, (recordMetadata, e) -> {
-                            if (e == null) {
-                                // the record was successfully sent
-                                log.info("Received new metadata. \n" +
-                                        "Topic:" + recordMetadata.topic() + "\n" +
-                                        "Key:" + record.key() + "\n" +
-                                        "Partition: " + recordMetadata.partition() + "\n" +
-                                        "Offset: " + recordMetadata.offset() + "\n" +
-                                        "Timestamp: " + recordMetadata.timestamp());
-                            } else {
-                                log.error("Error while producing message to kafka cluster", e);
-                            }
-                        });
-
-                    } catch (PersistenceException e) {
-                        log.error("Fail in persistence layer", e);
-                        try {
-                            transactionManager.rollback();
-                        } catch (SystemException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    } finally {
-                        producer.flush();
-                    }
-                }
+                News newsEntity = News.builder().title(newsDTO.getTitle()).description(newsDTO.getDescription())
+                        .publishedAt(newsDTO.getPublishedAt()).generatedAt(LocalDateTime.now()).build();
+                processNewEntity(newsDTO, newsEntity);
             }
         }
     }
 
-    private String downloadArticleImage(String urlToImage) {
+    private void processNewEntity(NewsDTO newsDTO, News newsEntity) {
+        String urlToImage = downloadArticleImage(newsDTO);
+        if (urlToImage != null) {
+            newsEntity.setUrlToImage(urlToImage);
+            newsEntity.setThumbnail(newsDTO.getThumbnail());
+
+            try {
+                log.info("Proceeding to save News {}", newsEntity.getTitle());
+                transactionManager.begin();
+                newsEntity.persistAndFlush();
+                transactionManager.commit();
+                kafkaClient.notifyRecentNews(newsEntity).get(5, TimeUnit.SECONDS);
+            } catch (PersistenceException e) {
+                log.error("Fail in persistence layer {}", e.getMessage());
+                log.debug("Debug error", e);
+                try {
+                    transactionManager.rollback();
+                } catch (SystemException ex) {
+                    throw new RuntimeException(ex);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private String downloadArticleImage(NewsDTO newsDTO) {
         try {
-            URL url = new URL(urlToImage);
+            URL url = new URL(newsDTO.getUrlToImage());
             ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
             String imageName = extractFileNameFromUrl(url);
             File imgTemp = File.createTempFile(imageName, ".file");
@@ -116,26 +91,34 @@ public class NewsProcessorService {
             FileChannel fileChannel = fileOutputStream.getChannel();
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
-            ObjectWriteResponse uploadObject = minioClient.uploadObject(
-                    UploadObjectArgs.builder()
-                            .bucket(newsBucket)
-                            .object(imageName)
-                            .filename(imgTemp.getAbsolutePath())
-                            .build());
-            String imageURL = minioClient.getPresignedObjectUrl(
-                    GetPresignedObjectUrlArgs.builder()
-                            .bucket(newsBucket)
-                            .object(imageName)
-                            .expiry(7, TimeUnit.DAYS)
-                            .method(Method.GET)
-                            .build());
+            File uploadImage = new File(imgTemp.getParentFile(), "uploaded_" + imageName);
+            CommandExecutor.executeCommand("convert", imgTemp.getAbsolutePath(), "-resize", "400x",
+                    uploadImage.getAbsolutePath());
+
+            ObjectWriteResponse uploadObject = minioClient.uploadObject(imageName, uploadImage.getAbsolutePath());
+            String imageURL = minioClient.getObjectPublicURL(imageName);
+
+            generateImageThumbnail(newsDTO, imageName, imgTemp);
             imgTemp.delete();
             return imageURL;
 
         } catch (Exception e) {
-            log.error("Fail to download the article image\n" + urlToImage, e);
+            log.error("Fail to download the article image: {} \n{}", newsDTO.getUrlToImage(), e.getMessage());
         }
         return null;
+    }
+
+    private void generateImageThumbnail(NewsDTO newsDTO, String imageName, File imgTemp) {
+        try {
+            File thumbnail = new File(imgTemp.getParentFile(), "thumbnail_" + imageName);
+            CommandExecutor.executeCommand("convert", imgTemp.getAbsolutePath(), "-resize", "75x",
+                    thumbnail.getAbsolutePath());
+            String imageBase64 = convertImageToByteArray(thumbnail);
+            newsDTO.setThumbnail(imageBase64);
+            thumbnail.delete();
+        } catch (Exception e) {
+            log.error("Fail creating thumbnail image in base64", e);
+        }
     }
 
     private String extractFileNameFromUrl(URL url) throws NoSuchAlgorithmException {
@@ -143,8 +126,7 @@ public class NewsProcessorService {
         return createMD5Hash(path);
     }
 
-    private String createMD5Hash(final String input)
-            throws NoSuchAlgorithmException {
+    private String createMD5Hash(final String input) throws NoSuchAlgorithmException {
 
         String hashtext = null;
         MessageDigest md = MessageDigest.getInstance("MD5");
@@ -164,4 +146,20 @@ public class NewsProcessorService {
         return hexText;
     }
 
+    private String convertImageToByteArray(File imgTemp) throws IOException {
+        FileInputStream stream = new FileInputStream(imgTemp);
+        int bufLength = 2048;
+        byte[] buffer = new byte[bufLength];
+        byte[] data;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int readLength;
+        while ((readLength = stream.read(buffer, 0, bufLength)) != -1) {
+            out.write(buffer, 0, readLength);
+        }
+        data = out.toByteArray();
+        String imageString = Base64.getEncoder().withoutPadding().encodeToString(data);
+        out.close();
+        stream.close();
+        return imageString;
+    }
 }

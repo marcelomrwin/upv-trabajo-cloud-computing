@@ -11,6 +11,7 @@ import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenExce
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.PersistenceException;
 import java.util.List;
 import java.util.Set;
 
@@ -33,26 +34,42 @@ public class NewsScheduleJob {
         processNews();
     }
 
-    @Fallback(fallbackMethod = "rotateServiceIndex")
+    public void rotateNewsServiceIndex(){
+        rotateServiceIndex();
+    }
+
+    @Fallback(fallbackMethod = "fallback")
     public void processNews() {
         try {
             NewsService newsService = newsServiceList.get(serviceClientIndex);
-            log.info("Processing instance of " + newsService.getClass().getName());
+            log.info("\n=====\nPROCESSING INSTANCE {} INDEX {}", newsService.getClass().getName(), serviceClientIndex);
             Set<NewsDTO> newsDTOSet = newsService.getNews();
-            log.info("Processing {} news",newsDTOSet.size());
+            log.info("Processing {} news", newsDTOSet.size());
             processorService.saveNewsFromArticle(newsDTOSet);
+        } catch (PersistenceException persistenceException) {
+            log.error("Persistence Exception {}", persistenceException.getMessage());
         } catch (CircuitBreakerOpenException circuitBreakerOpenException) {
-            log.error("Service unavailable!!");
-        }catch (Exception e){
-            log.error("Receive a unexpected exception",e);
+            log.error("Service {} unavailable!!", newsServiceList.get(serviceClientIndex).getClass().getName());
+            rotateServiceIndex();
+        } catch (javax.ws.rs.WebApplicationException wae) {
+            log.error("Client Service Error\n{}", wae.getMessage());
+            throw wae;
+        } catch (Exception e) {
+            log.error("Receive a unexpected exception", e);
+//            if (!(e.getCause() instanceof WebApplicationException))
+            throw e;
         }
     }
 
     private void rotateServiceIndex() {
-        log.warn("Activating Fault Tolerance");
+        log.warn("\n=====\nACTIVATING FAULT TOLERANCE. ACTUAL INDEX {} WITH INSTANCE OF TYPE {}\n=====", serviceClientIndex, newsServiceList.get(serviceClientIndex).getClass().getName());
         serviceClientIndex++;
         if (serviceClientIndex >= newsServiceList.size()) serviceClientIndex = 0;
-        log.warn("Calling processNews Again");
+        log.warn("\n=====\nNEW INDEX {} WITH INSTANCE {}\n=====", serviceClientIndex, newsServiceList.get(serviceClientIndex).getClass().getName());
+    }
+
+    private void fallback() {
+        rotateServiceIndex();
         processNews();
     }
 }

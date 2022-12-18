@@ -47,7 +47,7 @@ public class ExecutorService {
 
     @Transactional
     public void consumeJobEvent(Job job) {
-        try {
+        try {log.warn("JOB HAS ID? {}",job.getId());
             executorJobRepository.saveJob(job);
             Long id = Long.valueOf(job.getId());
             NewsDTO newsDTO = injectorRestClient.getNewsById(id);
@@ -56,6 +56,7 @@ public class ExecutorService {
             job.setProcessedBy(getHostname());
             job.setProcessedAt(LocalDateTime.now());
             job.setStatus(JobStatus.FINISHED);
+            executorJobRepository.updateJob(job);
             kafkaProducer.sendMessage(job);
 
         } catch (Exception e) {
@@ -64,6 +65,7 @@ public class ExecutorService {
             job.setStatus(JobStatus.FINISHED);
             job.setProcessedBy(getHostname());
             job.setProcessedAt(LocalDateTime.now());
+            executorJobRepository.updateJob(job);
             kafkaProducer.sendMessage(job);
         }
     }

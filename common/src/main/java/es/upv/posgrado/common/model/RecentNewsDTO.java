@@ -15,4 +15,5 @@ public class RecentNewsDTO {
     protected Long id;
     protected String title;
     protected LocalDateTime publishedAt;
+    protected String thumbnail;
 }

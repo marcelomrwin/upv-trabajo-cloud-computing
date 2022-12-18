@@ -15,6 +15,7 @@
         <module>injector-connectors-common</module>
         <module>injector-connectors-newsapi</module>
         <module>injector-connectors-mediastack</module>
+        <module>injector-connectors-newsdata</module>
     </modules>
 
 </project>

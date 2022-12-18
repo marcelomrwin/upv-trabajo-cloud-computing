@@ -24,7 +24,7 @@ public class Job extends PanacheEntityBase {
     @Enumerated(EnumType.STRING)
     private JobStatus status;
 
-    @Lob
+    @Column(columnDefinition = "text")
     private String result;
 
     private LocalDateTime requestedAt;
@@ -32,4 +32,7 @@ public class Job extends PanacheEntityBase {
     private LocalDateTime processedAt;
 
     private String processedBy;
+
+    @Column(columnDefinition = "text")
+    private String thumbnail;
 }

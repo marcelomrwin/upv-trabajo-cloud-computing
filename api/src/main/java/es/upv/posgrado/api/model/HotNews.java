@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,4 +22,7 @@ public class HotNews extends PanacheEntityBase {
     private Long id;
     private String title;
     private LocalDateTime publishedAt;
+    @Column(columnDefinition = "text")
+    private String thumbnail;
+
 }

@@ -1,5 +1,7 @@
 package es.upv.posgrado.api.service;
 
+import es.upv.posgrado.api.exceptions.HotNewsNotExistsException;
+import es.upv.posgrado.api.exceptions.JobExistsException;
 import es.upv.posgrado.api.model.HotNews;
 import es.upv.posgrado.api.model.Job;
 import es.upv.posgrado.common.model.JobStatus;
@@ -11,6 +13,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.core.Response;
 import java.time.LocalDateTime;
 
 @ApplicationScoped
@@ -24,12 +27,18 @@ public class ApiService {
     String jobRequestTopicName;
 
     @Transactional
-    public void saveHotNews(HotNews hotNews){
-        hotNews.persist();
+    public Job createJob(Long id) throws JobExistsException {
+        Job.findByIdOptional(id).ifPresent(c -> {
+            Job job = (Job) c;
+            throw new JobExistsException(job.getId(), job.getStatus());
+        });
+
+      return  HotNews.findByIdOptional(id)
+                .map(hotnews ->createJob((HotNews) hotnews))
+                .orElseThrow( ()-> new HotNewsNotExistsException(id));
     }
 
-    @Transactional
-    public Job createJob(HotNews hotNews) {
+    private Job createJob(HotNews hotNews) {
 
         Job job = Job.builder().id(hotNews.getId())
                 .title(hotNews.getTitle()).status(JobStatus.SUBMITTED)

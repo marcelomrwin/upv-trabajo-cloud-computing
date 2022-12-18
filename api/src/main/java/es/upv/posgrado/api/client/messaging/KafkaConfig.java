@@ -1,4 +1,4 @@
-package es.upv.posgrado.api.client;
+package es.upv.posgrado.api.client.messaging;
 
 import es.upv.posgrado.api.model.Job;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;

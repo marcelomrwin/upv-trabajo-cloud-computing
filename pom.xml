@@ -22,6 +22,8 @@
         <minio.version>8.4.6</minio.version>
         <okhttp.version>4.10.0</okhttp.version>
         <jgit.version>6.4.0.202211300538-r</jgit.version>
+        <imgscalr.version>4.2</imgscalr.version>
+        <thumbnailator.version>0.4.18</thumbnailator.version>
     </properties>
 
     <modules>
@@ -93,7 +95,6 @@
                 <artifactId>okhttp</artifactId>
                 <version>${okhttp.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.jgit</groupId>
                 <artifactId>org.eclipse.jgit</artifactId>

@@ -50,7 +50,7 @@ public class NewsApiConnectorService implements NewsService {
 
         } catch (Exception e) {
             page=1;
-            log.error("Fail getting news from NewsAPI", e);
+            log.error("Fail getting news from NewsAPI\n{}", e.getMessage());
             throw new RuntimeException(e);
         }
         return newsDTOSet;
