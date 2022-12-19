@@ -1,8 +1,8 @@
 package es.upv.posgrado.connectors.mediastack.service;
 
+import es.upv.posgrado.common.model.NewsDTO;
 import es.upv.posgrado.connectors.mediastack.client.MediaStackNewsApiService;
 import es.upv.posgrado.connectors.mediastack.model.MediaStackNewsResponse;
-import es.upv.posgrado.connectors.model.NewsDTO;
 import es.upv.posgrado.connectors.service.NewsService;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

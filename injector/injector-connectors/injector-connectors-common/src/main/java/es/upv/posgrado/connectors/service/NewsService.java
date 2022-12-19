@@ -1,6 +1,8 @@
 package es.upv.posgrado.connectors.service;
 
-import es.upv.posgrado.connectors.model.NewsDTO;
+
+
+import es.upv.posgrado.common.model.NewsDTO;
 
 import java.util.Set;
 

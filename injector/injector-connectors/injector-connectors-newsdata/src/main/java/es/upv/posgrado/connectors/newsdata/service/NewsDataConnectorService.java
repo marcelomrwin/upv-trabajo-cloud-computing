@@ -1,6 +1,6 @@
 package es.upv.posgrado.connectors.newsdata.service;
 
-import es.upv.posgrado.connectors.model.NewsDTO;
+import es.upv.posgrado.common.model.NewsDTO;
 import es.upv.posgrado.connectors.newsdata.client.NewsDataApiService;
 import es.upv.posgrado.connectors.newsdata.model.NewsDataResponse;
 import es.upv.posgrado.connectors.service.NewsService;

@@ -5,5 +5,5 @@ docker-compose -f docker-compose-dev.yaml down --rmi all && docker-compose -f do
 ```
 
 ```shell
-docker-compose -f docker-compose-dev.yaml down && docker-compose -f docker-compose-dev.yaml pull && docker-compose -f docker-compose-dev.yaml up
+docker-compose -f docker-compose-dev.yaml down && docker-compose -f docker-compose-dev.yaml pull && docker-compose -f docker-compose-dev.yaml --env-file .env.dev up
 ```

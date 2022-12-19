@@ -1,6 +1,6 @@
 package es.upv.posgrado.injector.schedule;
 
-import es.upv.posgrado.connectors.model.NewsDTO;
+import es.upv.posgrado.common.model.NewsDTO;
 import es.upv.posgrado.connectors.service.NewsService;
 import es.upv.posgrado.injector.service.NewsProcessorService;
 import io.quarkus.arc.All;

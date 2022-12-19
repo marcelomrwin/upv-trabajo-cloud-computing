@@ -3,8 +3,9 @@ package es.upv.posgrado.executor.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.upv.posgrado.common.model.Job;
 import es.upv.posgrado.common.model.JobStatus;
+import es.upv.posgrado.common.model.NewsDTO;
+import es.upv.posgrado.executor.client.cache.CacheClient;
 import es.upv.posgrado.executor.client.injector.InjectorRestClient;
-import es.upv.posgrado.executor.client.injector.model.NewsDTO;
 import es.upv.posgrado.executor.client.messaging.KafkaProducer;
 import es.upv.posgrado.executor.model.LocalJobDTO;
 import es.upv.posgrado.executor.repository.ExecutorJobRepository;
@@ -45,12 +46,18 @@ public class ExecutorService {
     @Inject
     KafkaProducer kafkaProducer;
 
+    @Inject
+    CacheClient cacheClient;
+
     @Transactional
     public void consumeJobEvent(Job job) {
-        try {log.warn("JOB HAS ID? {}",job.getId());
+        try {
             executorJobRepository.saveJob(job);
             Long id = Long.valueOf(job.getId());
-            NewsDTO newsDTO = injectorRestClient.getNewsById(id);
+            NewsDTO newsDTO = cacheClient.get(job.getId());
+            if (newsDTO == null)
+                newsDTO = injectorRestClient.getNewsById(id);
+
             String result = generateData(id, newsDTO.getTitle(), newsDTO.getDescription(), newsDTO.getGeneratedAt(), newsDTO.getPublishedAt(), newsDTO.getUrlToImage());
             job.setResult(result);
             job.setProcessedBy(getHostname());
@@ -61,7 +68,7 @@ public class ExecutorService {
 
         } catch (Exception e) {
             log.error("Error processing Job Request", e);
-            job.setResult("Error processing Job Request\n"+e.getMessage());
+            job.setResult("Error processing Job Request\n" + e.getMessage());
             job.setStatus(JobStatus.FINISHED);
             job.setProcessedBy(getHostname());
             job.setProcessedAt(LocalDateTime.now());

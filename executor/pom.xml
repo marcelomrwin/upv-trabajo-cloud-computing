@@ -8,7 +8,6 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>executor</artifactId>
-
   <dependencies>
     <dependency>
       <groupId>es.upv.posgrado</groupId>
@@ -56,6 +55,10 @@
       <artifactId>org.eclipse.jgit</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-redis-client</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
@@ -71,5 +74,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
 </project>
