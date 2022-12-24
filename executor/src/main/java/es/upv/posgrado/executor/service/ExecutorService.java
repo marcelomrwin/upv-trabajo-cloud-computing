@@ -10,6 +10,7 @@ import es.upv.posgrado.executor.client.messaging.KafkaProducer;
 import es.upv.posgrado.executor.model.LocalJobDTO;
 import es.upv.posgrado.executor.repository.ExecutorJobRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -22,10 +23,15 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 @Slf4j
 public class ExecutorService {
+
+    @ConfigProperty(name = "app.simulate.delay", defaultValue = "false")
+    Boolean simulateDelay;
 
     @Inject
     ScriptExecutor scriptExecutor;
@@ -53,6 +59,10 @@ public class ExecutorService {
     public void consumeJobEvent(Job job) {
         try {
             executorJobRepository.saveJob(job);
+            kafkaProducer.sendMessage(job);
+
+            delay();
+
             Long id = Long.valueOf(job.getId());
             NewsDTO newsDTO = cacheClient.get(job.getId());
             if (newsDTO == null)
@@ -74,6 +84,18 @@ public class ExecutorService {
             job.setProcessedAt(LocalDateTime.now());
             executorJobRepository.updateJob(job);
             kafkaProducer.sendMessage(job);
+        }
+    }
+
+    private void delay() {
+        if (simulateDelay) {
+            Random random = new Random();
+            long seconds = random.nextLong(10);
+            try {
+                TimeUnit.SECONDS.sleep(seconds);
+            } catch (InterruptedException e) {
+                log.error("Fail while delaying method", e.getMessage());
+            }
         }
     }
 

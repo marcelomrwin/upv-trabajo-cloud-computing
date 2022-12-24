@@ -8,6 +8,8 @@ import {Container} from "react-bootstrap";
 import Row from 'react-bootstrap/Row';
 
 import NewsList from "./components/NewsList";
+import JobList from "./components/JobList";
+import AlertPopup from "./components/alert/AlertPopup";
 
 function App() {
 
@@ -19,6 +21,11 @@ function App() {
                     <nav className="navbar navbar-expand navbar-dark bg-dark">
                         <a href="/news" className="navbar-brand">&nbsp;&nbsp;Cloud Computing</a>
                         <div className="navbar-nav mr-auto">
+                            <li className="nav-item">
+                                <Link to={"/dashboard"} className="nav-link">
+                                    Dashboard
+                                </Link>
+                            </li>
                             <li className="nav-item">
                                 <Link to={"/news"} className="nav-link">
                                     News
@@ -42,6 +49,7 @@ function App() {
                         <Routes>
                             <Route path='/' element={<NewsList/>}/>
                             <Route path='/news' element={<NewsList/>}/>
+                            <Route path='/jobs' element={<JobList/>}/>
                         </Routes>
 
                     </div>

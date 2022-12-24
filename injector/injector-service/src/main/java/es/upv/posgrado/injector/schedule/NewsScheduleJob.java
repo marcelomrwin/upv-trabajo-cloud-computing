@@ -2,6 +2,10 @@ package es.upv.posgrado.injector.schedule;
 
 import es.upv.posgrado.common.model.NewsDTO;
 import es.upv.posgrado.connectors.service.NewsService;
+import es.upv.posgrado.injector.client.cache.CacheClient;
+import es.upv.posgrado.injector.client.rss.RssFeedService;
+import es.upv.posgrado.injector.client.rss.model.Item;
+import es.upv.posgrado.injector.client.rss.model.Rss;
 import es.upv.posgrado.injector.service.NewsProcessorService;
 import io.quarkus.arc.All;
 import io.quarkus.scheduler.Scheduled;
@@ -12,7 +16,13 @@ import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenExce
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.PersistenceException;
+import javax.ws.rs.WebApplicationException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 @Slf4j
@@ -26,6 +36,12 @@ public class NewsScheduleJob {
     @Inject
     NewsProcessorService processorService;
 
+    @Inject
+    RssFeedService rssFeedService;
+
+    @Inject
+    CacheClient cacheClient;
+
     int serviceClientIndex = 0;
 
     @Scheduled(cron = "{cron.expr}")
@@ -34,7 +50,7 @@ public class NewsScheduleJob {
         processNews();
     }
 
-    public void rotateNewsServiceIndex(){
+    public void rotateNewsServiceIndex() {
         rotateServiceIndex();
     }
 
@@ -51,14 +67,55 @@ public class NewsScheduleJob {
         } catch (CircuitBreakerOpenException circuitBreakerOpenException) {
             log.error("Service {} unavailable!!", newsServiceList.get(serviceClientIndex).getClass().getName());
             rotateServiceIndex();
-        } catch (javax.ws.rs.WebApplicationException wae) {
-            log.error("Client Service Error\n{}", wae.getMessage());
-            throw wae;
+        } catch (RuntimeException rte) {
+            log.error("Client Service Error\n{}", rte.getMessage());
+
+            if (rte instanceof WebApplicationException | rte.getCause() instanceof WebApplicationException) {
+                WebApplicationException wae = rte instanceof WebApplicationException ? (WebApplicationException) rte : (WebApplicationException) rte.getCause();
+                switch (wae.getResponse().getStatus()) {
+                    case 429:
+                    case 426: {
+                        log.info("Generating news from Qaurkus RSS Feed https://quarkus.io/feed.xml");
+                        Set<NewsDTO> newsDTOSet = getNewsFromQuarkusFeed(); //contingence
+                        processorService.saveNewsFromArticle(newsDTOSet);
+                        break;
+                    }
+                    default:
+                        throw wae;
+                }
+            }
         } catch (Exception e) {
             log.error("Receive a unexpected exception", e);
-//            if (!(e.getCause() instanceof WebApplicationException))
             throw e;
         }
+    }
+
+    private Set<NewsDTO> getNewsFromQuarkusFeed() {
+        Set<NewsDTO> news = new HashSet<>();
+        try {
+            Rss rss = cacheClient.getRss();
+            if (rss == null) {
+                rss = rssFeedService.generateNewsDTOfromQuarkusFeed();
+                cacheClient.addRss(rss);
+            }
+
+            long id = new Random().nextLong(1000, 10000);
+            int index = new Random().nextInt(0, rss.getChannel().getItem().size());
+            Item item = rss.getChannel().getItem().get(index);
+            item.setTitle(item.getTitle() + " " + id);
+
+            news.add(NewsDTO.builder()
+                    .id(id)
+                    .generatedAt(LocalDateTime.now())
+                    .publishedAt(OffsetDateTime.parse(item.getPubDate(), DateTimeFormatter.ofPattern("E, dd MMM yyyy HH:mm:ss Z")).toLocalDateTime())
+                    .title(item.getTitle())
+                    .urlToImage("https://registry.quarkus.io/q/swagger-ui/logo.png")
+                    .description(item.getDescription())
+                    .build());
+        } catch (Exception e) {
+            log.error("Fail in get news from rss feed", e);
+        }
+        return news;
     }
 
     private void rotateServiceIndex() {

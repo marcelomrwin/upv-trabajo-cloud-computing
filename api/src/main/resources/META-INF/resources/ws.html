@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Quarkus Chat!</title>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/css/patternfly.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/css/patternfly-additions.min.css">
+
+    <style>
+        #chat {
+            resize: none;
+            overflow: hidden;
+            min-height: 300px;
+            max-height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+<nav class="navbar navbar-default navbar-pf" role="navigation">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="/">
+            <p><strong>>> Quarkus WebSocket</strong></p>
+        </a>
+    </div>
+</nav>
+<div class="container">
+    <br/>
+    <div class="row">
+        <button id="connect" class="col-md-1 btn btn-primary" type="button">connect</button>
+        <br/>
+        <br/>
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/js/patternfly.min.js"></script>
+
+<script type="text/javascript">
+    var connected = false;
+    var socket;
+
+    $( document ).ready(function() {
+        $("#connect").click(connect);
+    });
+
+    var connect = function() {
+        if (! connected) {
+            socket = new WebSocket("ws://" + location.host + "/ws/hotnews/test" );
+            socket.onopen = function() {
+                connected = true;
+                console.log("Connected to the web socket");
+            };
+            socket.onmessage =function(m) {
+                console.log("Got message: " + m.data);
+            };
+        }
+    };
+
+</script>
+</body>
+
+</html>

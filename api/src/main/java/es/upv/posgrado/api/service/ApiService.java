@@ -5,6 +5,7 @@ import es.upv.posgrado.api.exceptions.JobExistsException;
 import es.upv.posgrado.api.model.HotNews;
 import es.upv.posgrado.api.model.Job;
 import es.upv.posgrado.common.model.JobStatus;
+import es.upv.posgrado.common.model.NewsStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -33,11 +34,12 @@ public class ApiService {
             throw new JobExistsException(job.getId(), job.getStatus());
         });
 
-      return  HotNews.findByIdOptional(id)
+      return HotNews.findByIdOptional(id)
                 .map(hotnews ->createJob((HotNews) hotnews))
                 .orElseThrow( ()-> new HotNewsNotExistsException(id));
     }
 
+    @Transactional(Transactional.TxType.MANDATORY)
     private Job createJob(HotNews hotNews) {
 
         Job job = Job.builder().id(hotNews.getId())
@@ -46,6 +48,9 @@ public class ApiService {
                 .publishedAt(hotNews.getPublishedAt()).build();
 
         job.persist();
+
+        hotNews.setStatus(NewsStatus.SUBMITTED);
+        hotNews.persistAndFlush();
 
         try {
             ProducerRecord<String, Job> record = new ProducerRecord<>(jobRequestTopicName, String.valueOf(job.getId()), job);

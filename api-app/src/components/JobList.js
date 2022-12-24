@@ -1,27 +1,23 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {Pagination} from "@mui/material";
-import NewsService from "../services/NewsService";
+import JobsService from "../services/JobsService";
 import {useTable} from "react-table";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Col} from "react-bootstrap";
-import JobsService from "../services/JobsService";
-import useAlert from "./alert/useAlert";
-import AlertPopup from "./alert/AlertPopup";
 
-const NewsList = (props) => {
-    const [items, setNews] = useState([]);
+const JobList = (props) => {
+    const [items, setJobs] = useState([]);
     const [searchTitle, setSearchTitle] = useState("");
-    const newsRef = useRef();
-
+    const jobsRef = useRef();
     const [page, setPage] = useState(1);
     const [count, setCount] = useState(0);
     const [pageSize, setPageSize] = useState(5);
 
     const pageSizes = [5, 10, 20];
 
-    newsRef.current = items;
+    jobsRef.current = items;
 
     const onChangeSearchTitle = (e) => {
         const searchTitle = e.target.value;
@@ -47,19 +43,18 @@ const NewsList = (props) => {
     };
 
     useEffect(() => {
-        retrieveNews();
-        wsconnect();
+        retrieveJobs();
     }, [page, pageSize]);
 
-    const retrieveNews = () => {
+    const retrieveJobs = () => {
         const params = getRequestParams(searchTitle, page, pageSize);
-        NewsService.getNews(params)
+        JobsService.getJobs(params)
             .then((resp) => {
-
                 const {items, totalPages} = resp.data;
-                setNews(items);
+                setJobs(items);
                 setCount(totalPages);
 
+                console.log(resp.data);
             })
             .catch((e) => {
                 console.error(e);
@@ -68,11 +63,11 @@ const NewsList = (props) => {
 
     const findByTitle = () => {
         setPage(1);
-        retrieveNews();
+        retrieveJobs();
     }
 
     const refreshList = () => {
-        retrieveNews();
+        retrieveJobs();
     }
 
     const handlePageChange = (event, value) => {
@@ -82,22 +77,6 @@ const NewsList = (props) => {
     const handlePageSizeChange = (event) => {
         setPageSize(event.target.value);
         setPage(1);
-    }
-
-    const {setAlert} = useAlert();
-
-    const submitJob = (rowIndex) => {
-        const id = newsRef.current[rowIndex].id;
-        JobsService.submitJob(id).then(
-            (response) => {
-                setPage(page);
-                refreshList();
-                setAlert('Job Submitted','Work submitted, to follow up navigate to the work tab', 'success');
-            }
-        ).catch((e) => {
-            console.error(e.response)
-            setAlert('Error in submit job: '+e.message, e.response.data, 'error');
-        });
     }
 
     const columns = useMemo(
@@ -118,8 +97,20 @@ const NewsList = (props) => {
                 accessor: "title"
             },
             {
+                Header: "Status",
+                accessor: "status"
+            },
+            {
                 Header: "Published",
                 accessor: "publishedAt"
+            },
+            {
+                Header: "Requested",
+                accessor: "requestedAt"
+            },
+            {
+                Header: "Processed",
+                accessor: "processedAt"
             },
             {
                 Header: "Actions",
@@ -128,8 +119,12 @@ const NewsList = (props) => {
                     const rowIdx = props.row.id;
                     return (
                         <div>
-                          <span role={"button"} onClick={() => submitJob(rowIdx)} title='submit job'>
-                              <i className="far fa-solid fa-hammer action mr-2 pe-0"></i>
+                          <span onClick={() => console.log(rowIdx)}>
+                              <i className="far fa-edit action mr-2"></i>
+                          </span>
+
+                            <span onClick={() => console.log(rowIdx)}>
+                              <i className="far fa-trash action"></i>
                           </span>
                         </div>
                     );
@@ -138,51 +133,6 @@ const NewsList = (props) => {
         ],
         []
     );
-
-    /* websocket begin */
-
-    var connected = false;
-    var socket;
-
-    const generateClientId = (length) => {
-        var result           = '';
-        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for ( var i = 0; i < length; i++ ) {
-            result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
-        return result;
-    }
-
-    const wsconnect = () =>{
-        if (!connected) {
-            var clientId = generateClientId(6);
-            // eslint-disable-next-line no-restricted-globals
-            var wsUrl = "ws://" + "localhost:8083" + "/ws/hotnews/" + clientId;
-            console.log('Connect to '+wsUrl);
-            socket = new WebSocket(wsUrl);
-
-            socket.onopen = (event) => {
-                connected = true;
-                console.log("Connected to the web socket with clientId [" + clientId + "]");
-            };
-            socket.onmessage = (m) => {
-                if (m.data == 'PING'){
-                    console.log('Receiving PING from the server, respond with PONG');
-                    socket.send('PONG');
-                }else{
-                    console.log("Got hotnews: " + m.data);
-                    setAlert('Hot News arrived','Refreshing table list with News', 'info');
-                    refreshList();
-                }
-            };
-            socket.onerror = (ev) => {
-                console.error(ev.data);
-            }
-        }
-    }
-
-    /* websocket end */
 
     const {
         getTableProps,
@@ -198,7 +148,6 @@ const NewsList = (props) => {
 
     return (
         <Container>
-            <AlertPopup/>
             <div className="list row">
                 <Row className="justify-content-md-center">
                     <Col>
@@ -285,4 +234,4 @@ const NewsList = (props) => {
     );
 };
 
-export default NewsList;
+export default JobList;

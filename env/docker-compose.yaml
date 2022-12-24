@@ -26,6 +26,7 @@ services:
     restart: always
     ports:
       - 19092:19092
+      - 9997:9997
     volumes:
       - "kafka_data:/bitnami"
     environment:
@@ -47,7 +48,7 @@ services:
 
   kafka-ui:
     container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui:v0.4.0
     restart: unless-stopped
     ports:
       - 9080:8080
@@ -56,11 +57,25 @@ services:
         condition: service_started
       kafka:
         condition: service_healthy
-
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+      LOGGING_LEVEL_ROOT: error
+    networks:
+      - kafka_network
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    restart: unless-stopped
+    ports:
+      - 9083:9000
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:9092"
+      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+    depends_on:
+      kafka:
+        condition: service_healthy
     networks:
       - kafka_network
 
@@ -167,6 +182,17 @@ services:
         soft: -1
         hard: -1
     mem_swappiness: 0
+    volumes:
+      - cache:/data
+
+  redisinsight:
+    container_name: redisinsight
+    image: redislabs/redisinsight
+    hostname: redisinsight
+    ports:
+      - 9085:8001
+    volumes:
+      - redisinsight_data:/db
 
 volumes:
   minion_data:
@@ -177,3 +203,4 @@ volumes:
   kafka_data:
   zookeeper_data:
   cache:
+  redisinsight_data:

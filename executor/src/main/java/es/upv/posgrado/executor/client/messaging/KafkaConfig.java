@@ -11,6 +11,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.control.ActivateRequestContext;
 import javax.enterprise.inject.Produces;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -37,7 +38,7 @@ public class KafkaConfig {
     }
 
     @Produces
-    @RequestScoped
+    @ActivateRequestContext
     public Producer<String, Job> createProducer() {
         var props = new Properties();
 

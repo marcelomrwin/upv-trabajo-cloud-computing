@@ -7,6 +7,7 @@ import es.upv.posgrado.api.model.Job;
 import es.upv.posgrado.api.repository.JobRepository;
 import es.upv.posgrado.api.repository.NewsRepository;
 import es.upv.posgrado.api.service.ApiService;
+import es.upv.posgrado.common.model.NewsStatus;
 import io.quarkus.panache.common.Sort;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
@@ -35,7 +36,7 @@ public class ApiResource {
     @Path("/hotnews")
     @GET
     public Response getHotNews() {
-        return Response.ok(HotNews.listAll(Sort.ascending("id"))).build();
+        return Response.ok(HotNews.list("status = ?1", Sort.ascending("id"), NewsStatus.RECENT)).build();
     }
 
     @Path("/hotnews/paged")
