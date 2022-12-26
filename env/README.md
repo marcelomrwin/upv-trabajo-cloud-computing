@@ -14,8 +14,8 @@ docker-compose down && docker-compose pull && docker-compose --env-file .env.dev
 
 ## Services
 * Kafka UI http://localhost:9080/
-* MinIO Console http://localhost:9001/
+* MinIO Console http://localhost:9001/ (admin/password)
 * MongoDB Express http://localhost:9081/
 * PgAdmin http://localhost:9082/
-* Kafdrop http://localhost:9083/
 * RedisInsight http://localhost:9085/
+* Keycloak http://localhost:8180/ (admin/admin)

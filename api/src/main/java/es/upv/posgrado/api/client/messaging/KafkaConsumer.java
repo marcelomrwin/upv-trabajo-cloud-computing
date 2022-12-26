@@ -15,7 +15,6 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 
@@ -57,15 +56,18 @@ public class KafkaConsumer {
     @Blocking
     public CompletionStage<Void> jobResponseConsumer(Message<Job> message) {
         try {
-            Job payload = message.getPayload();
-
-            Optional<HotNews> hotNewsOptional = HotNews.findByIdOptional(payload.getId());
-            if (hotNewsOptional.isPresent())
-                payload.setThumbnail(hotNewsOptional.get().getThumbnail());
-
-            log.warn("receive new Message\n{}\n", payload);
-            Panache.getEntityManager().merge(payload);
+            Job job = message.getPayload();
+            Panache.getEntityManager().merge(job);
             Panache.getEntityManager().flush();
+
+            es.upv.posgrado.common.model.Job dto = es.upv.posgrado.common.model.Job.builder()
+                    .id(String.valueOf(job.getId()))
+                    .status(job.getStatus())
+                    .submittedBy(job.getSubmittedBy())
+                    .build();
+
+            eventBus.publish("job", objectMapper.writeValueAsString(dto));
+
         } catch (Exception e) {
             log.error("Fail in [jobResponseConsumer] processing the message", e);
             //dead letter channel?

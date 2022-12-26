@@ -1,5 +1,6 @@
 package es.upv.posgrado.client.shell;
 
+import javax.enterprise.context.RequestScoped;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,9 +8,11 @@ import java.io.InputStreamReader;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
+
+@RequestScoped
 public class CommandExecutor {
 
-    public static String executeCommand(String... commands) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+    public String executeCommand(String... commands) throws IOException, InterruptedException, ExecutionException, TimeoutException {
         ProcessBuilder builder = new ProcessBuilder();
         builder.command(commands);
         Process process = builder.start();

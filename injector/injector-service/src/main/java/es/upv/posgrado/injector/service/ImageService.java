@@ -8,6 +8,7 @@ import io.minio.ObjectWriteResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.*;
 import java.math.BigInteger;
@@ -26,6 +27,9 @@ public class ImageService {
     @Inject
     MinioClient minioClient;
 
+    @Inject
+    Instance<CommandExecutor> commandExecutor;
+
     protected String downloadArticleImage(NewsDTO newsDTO) {
         try {
             URL url = new URL(newsDTO.getUrlToImage());
@@ -37,7 +41,7 @@ public class ImageService {
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
             File uploadImage = new File(imgTemp.getParentFile(), "uploaded_" + imageName);
-            CommandExecutor.executeCommand("convert", imgTemp.getAbsolutePath(), "-resize", "400x",
+            commandExecutor.get().executeCommand("convert", imgTemp.getAbsolutePath(), "-resize", "400x",
                     uploadImage.getAbsolutePath());
 
             ObjectWriteResponse uploadObject = minioClient.uploadObject(imageName, uploadImage.getAbsolutePath());
@@ -56,7 +60,7 @@ public class ImageService {
     protected void generateImageThumbnail(NewsDTO newsDTO, String imageName, File imgTemp) {
         try {
             File thumbnail = new File(imgTemp.getParentFile(), "thumbnail_" + imageName);
-            CommandExecutor.executeCommand("convert", imgTemp.getAbsolutePath(), "-resize", "75x",
+            commandExecutor.get().executeCommand("convert", imgTemp.getAbsolutePath(), "-resize", "75x",
                     thumbnail.getAbsolutePath());
             String imageBase64 = convertImageToByteArray(thumbnail);
             newsDTO.setThumbnail(imageBase64);

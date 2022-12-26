@@ -28,24 +28,27 @@ public class ApiService {
     String jobRequestTopicName;
 
     @Transactional
-    public Job createJob(Long id) throws JobExistsException {
+    public Job createJob(Long id,String userName) throws JobExistsException {
         Job.findByIdOptional(id).ifPresent(c -> {
             Job job = (Job) c;
             throw new JobExistsException(job.getId(), job.getStatus());
         });
 
       return HotNews.findByIdOptional(id)
-                .map(hotnews ->createJob((HotNews) hotnews))
+                .map(hotnews ->createJob((HotNews) hotnews,userName))
                 .orElseThrow( ()-> new HotNewsNotExistsException(id));
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
-    private Job createJob(HotNews hotNews) {
+    private Job createJob(HotNews hotNews,String userName) {
 
         Job job = Job.builder().id(hotNews.getId())
                 .title(hotNews.getTitle()).status(JobStatus.SUBMITTED)
+                .thumbnail(hotNews.getThumbnail())
                 .requestedAt(LocalDateTime.now())
-                .publishedAt(hotNews.getPublishedAt()).build();
+                .publishedAt(hotNews.getPublishedAt())
+                .submittedBy(userName)
+                .build();
 
         job.persist();
 

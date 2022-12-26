@@ -1,7 +1,11 @@
 package es.upv.posgrado.api.ws;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import es.upv.posgrado.common.model.Job;
 import io.quarkus.scheduler.Scheduled;
 import io.quarkus.vertx.ConsumeEvent;
+import io.vertx.core.eventbus.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.context.ManagedExecutor;
 
@@ -18,23 +22,40 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WsSessionManager {
     @Inject
     ManagedExecutor executor;
-    private Map<String, Session> sessions = new ConcurrentHashMap<>();
+    @Inject
+    ObjectMapper objectMapper;
+    private Map<String, Session> hotNewsSessions = new ConcurrentHashMap<>();
+    private Map<String, Session> jobSessions = new ConcurrentHashMap<>();
 
-    public void addSession(Session session, String clientId) {
-        sessions.put(clientId, session);
+    public void addHotNewsSession(Session session, String clientId) {
+        hotNewsSessions.put(clientId, session);
     }
 
-    public void sentResponse(String message, String clientId) {
-        sessions.get(clientId).getAsyncRemote().sendObject(message, result -> {
+    public void addJobSession(Session session, String clientId) {
+        jobSessions.put(clientId, session);
+    }
+
+    public void sentHotNewsResponse(String message, String clientId) {
+        hotNewsSessions.get(clientId).getAsyncRemote().sendObject(message, result -> {
             if (result.getException() != null) {
-                log.error("Unable to send message", result.getException());
+                log.error("Unable to send hotnews message", result.getException());
             }
         });
     }
 
-    public CompletionStage<Void> broadcast(Object message) {
+    public CompletionStage<Void> notifyJobResponse(String message, String clientId) {
         return CompletableFuture.runAsync(() -> {
-            sessions.values().forEach(s -> {
+            jobSessions.get(clientId).getAsyncRemote().sendObject(message, result -> {
+                if (result.getException() != null) {
+                    log.error("Unable to send job message", result.getException());
+                }
+            });
+        }, executor);
+    }
+
+    public CompletionStage<Void> broadcastHotNews(Object message) {
+        return CompletableFuture.runAsync(() -> {
+            hotNewsSessions.values().forEach(s -> {
                 s.getAsyncRemote().sendObject(message, result -> {
                     if (result.getException() != null) {
                         log.error("Unable to send message", result.getException());
@@ -44,24 +65,55 @@ public class WsSessionManager {
         }, executor);
     }
 
-    public void removeSession(String clientId) {
-        sessions.remove(clientId);
+    public void removeHotNewsSession(String clientId) {
+        hotNewsSessions.remove(clientId);
+    }
+
+    public void removeJobSession(String clientId) {
+        jobSessions.remove(clientId);
     }
 
     @ConsumeEvent("hotnews")
-    public void publishWsMessage(String message) {
-        broadcast(message);
+    public void publishHotNewsWsMessage(String message) {
+        broadcastHotNews(message);
     }
 
-    @Scheduled(every = "10s")
+    @ConsumeEvent("job")
+    public void publishJobMessage(Message<String> msg) {
+        try {
+            Job job = objectMapper.readValue(msg.body(), Job.class);
+            notifyJobResponse(msg.body(), job.getSubmittedBy());
+        } catch (JsonProcessingException e) {
+            log.error("Fail sending response to WS",e);
+        }
+    }
+
+    @Scheduled(every = "30s")
     void ping() {
-        sessions.keySet().forEach(k -> {
-            sessions.get(k).getAsyncRemote().sendText("PING",rs -> {
-                if (rs.getException()!=null){
-                    log.error("Fail sending PING to session "+k);
-                    removeSession(k);
-                }
-            });
+        hotNewsSessions.keySet().forEach(k -> {
+            Session session = hotNewsSessions.get(k);
+            if (session.isOpen())
+                session.getAsyncRemote().sendText("PING", rs -> {
+                    if (rs.getException() != null) {
+                        log.error("Fail sending PING to session " + k);
+                        removeHotNewsSession(k);
+                    }
+                });
+            else
+                removeHotNewsSession(k);
+        });
+
+        jobSessions.keySet().forEach(k -> {
+            Session session = jobSessions.get(k);
+            if (session.isOpen())
+                session.getAsyncRemote().sendText("PING", rs -> {
+                    if (rs.getException() != null) {
+                        log.error("Fail sending PING to session " + k);
+                        removeJobSession(k);
+                    }
+                });
+            else
+                removeJobSession(k);
         });
     }
 }

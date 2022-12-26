@@ -9,6 +9,8 @@ import {Col} from "react-bootstrap";
 import JobsService from "../services/JobsService";
 import useAlert from "./alert/useAlert";
 import AlertPopup from "./alert/AlertPopup";
+import AuthorizedElement from "../security/AuthorizedElement";
+import keycloak from "../Keycloak";
 
 const NewsList = (props) => {
     const [items, setNews] = useState([]);
@@ -17,7 +19,7 @@ const NewsList = (props) => {
 
     const [page, setPage] = useState(1);
     const [count, setCount] = useState(0);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(10);
 
     const pageSizes = [5, 10, 20];
 
@@ -92,11 +94,11 @@ const NewsList = (props) => {
             (response) => {
                 setPage(page);
                 refreshList();
-                setAlert('Job Submitted','Work submitted, to follow up navigate to the work tab', 'success');
+                setAlert('Job ' + id + ' Submitted', 'Work submitted. To follow up navigate to the Jobs tab', 'success');
             }
         ).catch((e) => {
             console.error(e.response)
-            setAlert('Error in submit job: '+e.message, e.response.data, 'error');
+            setAlert('Error in submit job: ' + e.message, e.response.data, 'error');
         });
     }
 
@@ -110,10 +112,6 @@ const NewsList = (props) => {
                 }
             },
             {
-                Header: "Id",
-                accessor: "id"
-            },
-            {
                 Header: "Title",
                 accessor: "title"
             },
@@ -122,15 +120,19 @@ const NewsList = (props) => {
                 accessor: "publishedAt"
             },
             {
-                Header: "Actions",
+                Header: "Publish",
                 accessor: "actions",
                 Cell: (props) => {
                     const rowIdx = props.row.id;
                     return (
                         <div>
-                          <span role={"button"} onClick={() => submitJob(rowIdx)} title='submit job'>
-                              <i className="far fa-solid fa-hammer action mr-2 pe-0"></i>
-                          </span>
+                            <AuthorizedElement roles={['USER','ADMIN']}>
+                              <span role={"button"} onClick={() => submitJob(rowIdx)}
+                                    data-placement="bottom" title='Submit Job'
+                                    className="btn btn-primary btn-lg">
+                                  <i className="far fa-solid fa-hammer action mr-2 pe-0"></i>
+                              </span>
+                            </AuthorizedElement>
                         </div>
                     );
                 }
@@ -145,21 +147,26 @@ const NewsList = (props) => {
     var socket;
 
     const generateClientId = (length) => {
-        var result           = '';
-        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         var charactersLength = characters.length;
-        for ( var i = 0; i < length; i++ ) {
+        for (var i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;
     }
 
-    const wsconnect = () =>{
+    const wsconnect = () => {
         if (!connected) {
             var clientId = generateClientId(6);
+
+            if (keycloak && keycloak.token) {
+                clientId = keycloak.tokenParsed.preferred_username;
+            }
+
             // eslint-disable-next-line no-restricted-globals
             var wsUrl = "ws://" + "localhost:8083" + "/ws/hotnews/" + clientId;
-            console.log('Connect to '+wsUrl);
+            console.log('Connect to ' + wsUrl);
             socket = new WebSocket(wsUrl);
 
             socket.onopen = (event) => {
@@ -167,12 +174,12 @@ const NewsList = (props) => {
                 console.log("Connected to the web socket with clientId [" + clientId + "]");
             };
             socket.onmessage = (m) => {
-                if (m.data == 'PING'){
+                if (m.data == 'PING') {
                     console.log('Receiving PING from the server, respond with PONG');
                     socket.send('PONG');
-                }else{
+                } else {
                     console.log("Got hotnews: " + m.data);
-                    setAlert('Hot News arrived','Refreshing table list with News', 'info');
+                    setAlert('Hot News arrived', 'Refreshing table list with News', 'info');
                     refreshList();
                 }
             };

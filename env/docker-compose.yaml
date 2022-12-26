@@ -32,10 +32,14 @@ services:
     environment:
       KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
       ALLOW_PLAINTEXT_LISTENER: yes
+      KAFKA_CFG_LOG_RETENTION_HOURS: 24
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
       KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,CONNECTIONS_FROM_HOST://localhost:19092
       KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONNECTIONS_FROM_HOST:PLAINTEXT
       KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONNECTIONS_FROM_HOST://:19092
-      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_CFG_NUM_PARTITIONS: 3
+      KAFKA_CFG_MESSAGE_MAX_BYTES: 5242940
     depends_on:
       - zookeeper
     networks:
@@ -62,20 +66,6 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_METRICS_PORT: 9997
       LOGGING_LEVEL_ROOT: error
-    networks:
-      - kafka_network
-
-  kafdrop:
-    image: obsidiandynamics/kafdrop
-    restart: unless-stopped
-    ports:
-      - 9083:9000
-    environment:
-      KAFKA_BROKERCONNECT: "kafka:9092"
-      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
-    depends_on:
-      kafka:
-        condition: service_healthy
     networks:
       - kafka_network
 
@@ -194,6 +184,50 @@ services:
     volumes:
       - redisinsight_data:/db
 
+## Keycloak
+  postgres-keycloak:
+    image: postgres:13
+    container_name: postgres-keycloak
+    hostname: postgres-keycloak
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_keycloak_data:/var/lib/postgresql/data
+    environment:
+      - TZ=Europe/Madrid
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=password
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:20.0
+    container_name: keycloak
+    hostname: keycloak
+    depends_on:
+      - postgres-keycloak
+    restart: always
+    ports:
+      - 8180:8080
+      - 8543:8443
+    volumes:
+      - ./realm:/opt/keycloak/data/import
+    command: start-dev --import-realm
+    environment:
+      TZ: Europe/Madrid
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_LOG: console,file
+      KC_LOG_LEVEL: INFO,org.keycloak.transaction:warn,org.keycloak.services.scheduled:warn,org.hibernate:info,org.infinispan.protostream:info
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KC_DB_POOL_INITIAL_SIZE: 1
+      KC_DB_POOL_MIN_SIZE: 1
+      KC_DB_POOL_MAX_SIZE: 5
+
 volumes:
   minion_data:
   mongoexecutor_data:
@@ -204,3 +238,4 @@ volumes:
   zookeeper_data:
   cache:
   redisinsight_data:
+  postgres_keycloak_data:

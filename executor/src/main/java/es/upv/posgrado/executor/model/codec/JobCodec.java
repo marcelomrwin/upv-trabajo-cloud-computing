@@ -51,6 +51,9 @@ public class JobCodec implements CollectibleCodec<Job> {
         job.setProcessedAt(document.get(Job.ATTRIBUTE_PROCESSED_AT, LocalDateTime.class));
         job.setPublishedAt(document.get(Job.ATTRIBUTE_PUBLISHED_AT, LocalDateTime.class));
         job.setProcessedBy(document.getString(Job.ATTRIBUTE_PROCESSED_BY));
+        job.setSubmittedBy(document.getString(Job.ATTRIBUTE_SUBMITTED_BY));
+        job.setThumbnail(document.getString(Job.ATTRIBUTE_THUMBNAIL));
+        job.setElapsedTime(document.getString(Job.ATTRIBUTE_ELAPSED_TIME));
 
         return job;
     }
@@ -64,6 +67,10 @@ public class JobCodec implements CollectibleCodec<Job> {
         doc.put(Job.ATTRIBUTE_PROCESSED_AT, job.getProcessedAt());
         doc.put(Job.ATTRIBUTE_PUBLISHED_AT, job.getPublishedAt());
         doc.put(Job.ATTRIBUTE_PROCESSED_BY, job.getProcessedBy());
+        doc.put(Job.ATTRIBUTE_SUBMITTED_BY,job.getSubmittedBy());
+        doc.put(Job.ATTRIBUTE_THUMBNAIL,job.getThumbnail());
+        doc.put(Job.ATTRIBUTE_ELAPSED_TIME,job.getElapsedTime());
+
         documentCodec.encode(bsonWriter, doc, encoderContext);
     }
 

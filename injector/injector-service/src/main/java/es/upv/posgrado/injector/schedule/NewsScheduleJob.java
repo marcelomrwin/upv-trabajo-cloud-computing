@@ -10,6 +10,7 @@ import es.upv.posgrado.injector.service.NewsProcessorService;
 import io.quarkus.arc.All;
 import io.quarkus.scheduler.Scheduled;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenException;
 
@@ -42,12 +43,16 @@ public class NewsScheduleJob {
     @Inject
     CacheClient cacheClient;
 
+    @ConfigProperty(name = "app.skip.schedule")
+    Boolean skipSchedule;
+
     int serviceClientIndex = 0;
 
     @Scheduled(cron = "{cron.expr}")
     void cronJobGetNews() {
-        log.info("Starting cronJobGetNews");
-        processNews();
+        log.info("Starting cronJobGetNews. Skip? {}", skipSchedule);
+        if (!skipSchedule)
+            processNews();
     }
 
     public void rotateNewsServiceIndex() {

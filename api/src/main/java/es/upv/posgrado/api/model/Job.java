@@ -15,6 +15,14 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@NamedQueries({
+        @NamedQuery(name = "Job.findById",query = "from Job where id = ?1"),
+        @NamedQuery(name = "Job.findAllJobs",query = "from Job order by requestedAt,processedAt desc"),
+        @NamedQuery(name = "Job.findByIdSubmittedBy",query = "from Job where id = ?1 and lower(submittedBy) like concat('%',lower(?2),'%')"),
+        @NamedQuery(name = "Job.findAllSubmittedBy",query = "from Job where lower(submittedBy) like concat('%',lower(?1),'%') order by requestedAt desc"),
+        @NamedQuery(name = "Job.findByTitleSubmittedBy",query = "from Job where lower(submittedBy) like concat('%',lower(?1),'%') and lower(title) like concat('%',lower(?2),'%') order by requestedAt,processedAt desc"),
+        @NamedQuery(name = "Job.findByIdAndTitleSubmittedBy",query = "from Job where id = ?1 and lower(submittedBy) like concat('%',lower(?2),'%') and lower(title) like concat('%',lower(?3),'%') order by requestedAt,processedAt desc")
+})
 public class Job extends PanacheEntityBase {
     @Id
     private Long id;
@@ -35,4 +43,8 @@ public class Job extends PanacheEntityBase {
 
     @Column(columnDefinition = "text")
     private String thumbnail;
+
+    private String submittedBy;
+
+    private String elapsedTime;
 }

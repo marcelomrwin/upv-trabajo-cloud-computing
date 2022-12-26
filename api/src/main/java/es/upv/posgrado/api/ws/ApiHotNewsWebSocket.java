@@ -18,19 +18,19 @@ public class ApiHotNewsWebSocket {
     @OnOpen
     public void onOpen(Session session, @PathParam("clientId") String clientId) {
         log.info("Receive new Session from client {}", clientId);
-        wsSessionManager.addSession(session, clientId);
+        wsSessionManager.addHotNewsSession(session, clientId);
     }
 
     @OnClose
     public void onClose(Session session, @PathParam("clientId") String clientId) {
         log.info("Closing Session for client {}", clientId);
-        wsSessionManager.removeSession(clientId);
+        wsSessionManager.removeHotNewsSession(clientId);
     }
 
     @OnError
     public void onError(Session session, @PathParam("clientId") String clientId, Throwable throwable) {
         log.info("Closing Session for client {} due error {}", clientId, throwable.getCause());
-        wsSessionManager.removeSession(clientId);
+        wsSessionManager.removeHotNewsSession(clientId);
     }
 
     @OnMessage

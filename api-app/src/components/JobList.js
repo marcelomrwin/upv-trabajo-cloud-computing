@@ -6,14 +6,19 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Col} from "react-bootstrap";
+import useAlert from "./alert/useAlert";
+import AlertPopup from "./alert/AlertPopup";
+import keycloak from "../Keycloak";
+import AuthorizedElement from "../security/AuthorizedElement";
 
 const JobList = (props) => {
     const [items, setJobs] = useState([]);
     const [searchTitle, setSearchTitle] = useState("");
+    const [searchId, setSearchId] = useState("");
     const jobsRef = useRef();
     const [page, setPage] = useState(1);
     const [count, setCount] = useState(0);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(10);
 
     const pageSizes = [5, 10, 20];
 
@@ -24,8 +29,17 @@ const JobList = (props) => {
         setSearchTitle(searchTitle);
     };
 
-    const getRequestParams = (searchTitle, page, pageSize) => {
+    const onChangeSearchId = (e) =>{
+        const searchId = e.target.value;
+        setSearchId(searchId);
+    }
+
+    const getRequestParams = (searchId, searchTitle, page, pageSize) => {
         let params = {};
+
+        if (searchId){
+        params["id"] = searchId;
+        }
 
         if (searchTitle) {
             params["title"] = searchTitle;
@@ -44,24 +58,35 @@ const JobList = (props) => {
 
     useEffect(() => {
         retrieveJobs();
+        wsconnect();
     }, [page, pageSize]);
 
     const retrieveJobs = () => {
-        const params = getRequestParams(searchTitle, page, pageSize);
-        JobsService.getJobs(params)
-            .then((resp) => {
-                const {items, totalPages} = resp.data;
-                setJobs(items);
-                setCount(totalPages);
+        const params = getRequestParams(searchId, searchTitle, page, pageSize);
 
-                console.log(resp.data);
-            })
-            .catch((e) => {
-                console.error(e);
-            });
+        if (keycloak.hasRealmRole('ADMIN') || keycloak.hasResourceRole('ADMIN')) {
+            JobsService.getJobs(params)
+                .then(success)
+                .catch(fail);
+        } else {
+            JobsService.getJobsSubmitted(params)
+                .then(success)
+                .catch(fail);
+        }
     };
 
-    const findByTitle = () => {
+    function success(resp) {
+        const {items, totalPages} = resp.data;
+        setJobs(items);
+        setCount(totalPages);
+    }
+
+    function fail(e) {
+        console.error(e);
+        setAlert('Error retrieving Jobs', e, 'error');
+    }
+
+    const search = () => {
         setPage(1);
         retrieveJobs();
     }
@@ -78,6 +103,60 @@ const JobList = (props) => {
         setPageSize(event.target.value);
         setPage(1);
     }
+
+    const {setAlert} = useAlert();
+
+    /* websocket begin */
+
+    var connected = false;
+    var socket;
+
+    const generateClientId = (length) => {
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+
+    const wsconnect = () => {
+        if (!connected) {
+            var clientId = generateClientId(6);
+
+            if (keycloak && keycloak.token) {
+                clientId = keycloak.tokenParsed.preferred_username;
+            }
+
+            // eslint-disable-next-line no-restricted-globals
+            var wsUrl = "ws://" + "localhost:8083" + "/ws/jobs/" + clientId;
+            console.log('Connect to ' + wsUrl);
+            socket = new WebSocket(wsUrl);
+
+            socket.onopen = (event) => {
+                connected = true;
+                console.log("Connected to the web socket with clientId [" + clientId + "]");
+            };
+            socket.onmessage = (m) => {
+                if (m.data == 'PING') {
+                    console.log('Receiving PING from the server, respond with PONG');
+                    socket.send('PONG');
+                } else {
+                    const json = JSON.parse(m.data);
+                    setAlert('Job id ' + json.id + ' update received', 'Job updated with status ' + json.status, 'info');
+                    refreshList();
+                }
+            };
+            socket.onerror = (ev) => {
+                console.error(ev.data);
+                setAlert('Error submitting job', ev.data, 'error');
+
+            }
+        }
+    }
+
+    /* websocket end */
 
     const columns = useMemo(
         () => [
@@ -101,10 +180,6 @@ const JobList = (props) => {
                 accessor: "status"
             },
             {
-                Header: "Published",
-                accessor: "publishedAt"
-            },
-            {
                 Header: "Requested",
                 accessor: "requestedAt"
             },
@@ -113,19 +188,19 @@ const JobList = (props) => {
                 accessor: "processedAt"
             },
             {
-                Header: "Actions",
+                Header: "Elapsed Time",
+                accessor: "elapsedTime"
+            },
+            {
+                Header: "Download",
                 accessor: "actions",
                 Cell: (props) => {
                     const rowIdx = props.row.id;
                     return (
                         <div>
-                          <span onClick={() => console.log(rowIdx)}>
-                              <i className="far fa-edit action mr-2"></i>
-                          </span>
-
-                            <span onClick={() => console.log(rowIdx)}>
-                              <i className="far fa-trash action"></i>
-                          </span>
+                            <AuthorizedElement roles={['USER', 'ADMIN']}>
+                                {JobResultButton(props)}
+                            </AuthorizedElement>
                         </div>
                     );
                 }
@@ -133,6 +208,41 @@ const JobList = (props) => {
         ],
         []
     );
+
+    function JobResultButton(props) {
+        const rowIdx = props.row.id;
+        const jobStatus = jobsRef.current[rowIdx].status;
+
+        if (jobStatus === 'FINISHED') {
+            return <span role={"button"} onClick={() => getJobResult(rowIdx)}
+                         data-placement="bottom" title='Get Job Result'
+                         className="btn btn-primary btn-lg">
+                                  <i className="far fa-solid fa-download action mr-2 pe-0"></i>
+                              </span>
+        } else {
+            return <span role={"button"}
+                         data-placement="bottom" title='Get Job Result'
+                         className="btn btn-primary btn-lg disabled">
+                                  <i className="far fa-solid fa-download action mr-2 pe-0"></i>
+                              </span>
+        }
+    }
+
+    const getJobResult = (rowIndex) => {
+        const id = jobsRef.current[rowIndex].id;
+
+        JobsService.downloadJobResult(id).then(
+            (response) => {
+                var downloadWindow = window.open('url', id + '.html', "_blank,toolbar=yes,location=yes,directories=yes,height=600,width=800,scrollbars=yes,resizable=yes,status=yes,menubar=yes");
+                downloadWindow.document.write(response.data);
+                downloadWindow.document.close();
+            }
+        ).catch((e) => {
+            console.error(e);
+            setAlert('Error while downloading Job Result: ' + e.message, e.response.data, 'error');
+        });
+
+    }
 
     const {
         getTableProps,
@@ -148,8 +258,17 @@ const JobList = (props) => {
 
     return (
         <Container>
+            <AlertPopup/>
             <div className="list row">
                 <Row className="justify-content-md-center">
+                    <Col md="2">
+                        <input type="number"
+                               className="form-control text-center"
+                               placeholder="Search by Job ID"
+                               value={searchId}
+                               onChange={onChangeSearchId}
+                        />
+                    </Col>
                     <Col>
                         <input
                             type="text"
@@ -164,7 +283,7 @@ const JobList = (props) => {
                             <button
                                 className="btn btn-outline-secondary"
                                 type="button"
-                                onClick={findByTitle}>
+                                onClick={search}>
                                 Search
                             </button>
                         </div>

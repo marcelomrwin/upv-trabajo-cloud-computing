@@ -4,14 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import es.upv.posgrado.common.model.Job;
 import es.upv.posgrado.common.model.JobStatus;
 import es.upv.posgrado.common.model.NewsDTO;
-import es.upv.posgrado.executor.client.cache.CacheClient;
-import es.upv.posgrado.executor.client.injector.InjectorRestClient;
 import es.upv.posgrado.executor.client.messaging.KafkaProducer;
 import es.upv.posgrado.executor.model.LocalJobDTO;
 import es.upv.posgrado.executor.repository.ExecutorJobRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.eclipse.microprofile.context.ManagedExecutor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.control.ActivateRequestContext;
@@ -21,9 +19,11 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
@@ -37,11 +37,10 @@ public class ExecutorService {
     ScriptExecutor scriptExecutor;
 
     @Inject
-    ObjectMapper objectMapper;
+    ManagedExecutor executor;
 
     @Inject
-    @RestClient
-    InjectorRestClient injectorRestClient;
+    ObjectMapper objectMapper;
 
     @Inject
     ExecutorJobRepository executorJobRepository;
@@ -53,38 +52,48 @@ public class ExecutorService {
     KafkaProducer kafkaProducer;
 
     @Inject
-    CacheClient cacheClient;
+    NewsService newsService;
 
     @Transactional
-    public void consumeJobEvent(Job job) {
-        try {
-            executorJobRepository.saveJob(job);
-            kafkaProducer.sendMessage(job);
+    public CompletableFuture<Void> consumeJobEvent(Job job) {
+       CompletableFuture<Void> future = CompletableFuture.runAsync(()->{
+            try {
+                executorJobRepository.saveJob(job);
+                kafkaProducer.sendMessage(job);
 
-            delay();
+                delay();
 
-            Long id = Long.valueOf(job.getId());
-            NewsDTO newsDTO = cacheClient.get(job.getId());
-            if (newsDTO == null)
-                newsDTO = injectorRestClient.getNewsById(id);
+                Long id = Long.valueOf(job.getId());
+                NewsDTO newsDTO = newsService.findNews(id);
 
-            String result = generateData(id, newsDTO.getTitle(), newsDTO.getDescription(), newsDTO.getGeneratedAt(), newsDTO.getPublishedAt(), newsDTO.getUrlToImage());
-            job.setResult(result);
-            job.setProcessedBy(getHostname());
-            job.setProcessedAt(LocalDateTime.now());
-            job.setStatus(JobStatus.FINISHED);
-            executorJobRepository.updateJob(job);
-            kafkaProducer.sendMessage(job);
+                String result = generateData(id, newsDTO.getTitle(), newsDTO.getDescription(), newsDTO.getGeneratedAt(), newsDTO.getPublishedAt(), newsDTO.getUrlToImage());
+                job.setResult(result);
+                job.setProcessedBy(getHostname());
+                job.setProcessedAt(LocalDateTime.now());
+                job.setStatus(JobStatus.FINISHED);
 
-        } catch (Exception e) {
-            log.error("Error processing Job Request", e);
-            job.setResult("Error processing Job Request\n" + e.getMessage());
-            job.setStatus(JobStatus.FINISHED);
-            job.setProcessedBy(getHostname());
-            job.setProcessedAt(LocalDateTime.now());
-            executorJobRepository.updateJob(job);
-            kafkaProducer.sendMessage(job);
-        }
+                calculateElapsedTime(job);
+
+                executorJobRepository.updateJob(job);
+                kafkaProducer.sendMessage(job);
+
+            } catch (Exception e) {
+                log.error("Error processing Job Request", e);
+                job.setResult("Error processing Job Request\n" + e.getMessage());
+                job.setStatus(JobStatus.FINISHED);
+                job.setProcessedBy(getHostname());
+                job.setProcessedAt(LocalDateTime.now());
+                executorJobRepository.updateJob(job);
+                kafkaProducer.sendMessage(job);
+            }
+        },executor);
+       return future;
+    }
+
+    private void calculateElapsedTime(Job job) {
+        Duration duration = Duration.between(job.getRequestedAt(),job.getProcessedAt());
+        String text = String.format("%02d:%02d:%02d.%03d",duration.toHoursPart(),duration.toMinutesPart(),duration.toSecondsPart(),duration.toMillisPart());
+        job.setElapsedTime(text);
     }
 
     private void delay() {

@@ -35,7 +35,8 @@ public class ExecutorJobRepository {
                 Updates.set(Job.ATTRIBUTE_RESULT, job.getResult()),
                 Updates.set(Job.ATTRIBUTE_STATUS, job.getStatus()),
                 Updates.set(Job.ATTRIBUTE_PROCESSED_AT, job.getProcessedAt()),
-                Updates.set(Job.ATTRIBUTE_PROCESSED_BY, job.getProcessedBy())
+                Updates.set(Job.ATTRIBUTE_PROCESSED_BY, job.getProcessedBy()),
+                Updates.set(Job.ATTRIBUTE_ELAPSED_TIME,job.getElapsedTime())
         );
         UpdateOptions options = new UpdateOptions().upsert(true);
         try {
