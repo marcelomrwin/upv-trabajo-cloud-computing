@@ -27,12 +27,18 @@ public class WsSessionManager {
     private Map<String, Session> hotNewsSessions = new ConcurrentHashMap<>();
     private Map<String, Session> jobSessions = new ConcurrentHashMap<>();
 
+    private Map<String, Session> jobStatisticsSessions = new ConcurrentHashMap<>();
+
     public void addHotNewsSession(Session session, String clientId) {
         hotNewsSessions.put(clientId, session);
     }
 
     public void addJobSession(Session session, String clientId) {
         jobSessions.put(clientId, session);
+    }
+
+    public void addJobStatisticsSession(Session session, String clientId) {
+        jobStatisticsSessions.put(clientId, session);
     }
 
     public void sentHotNewsResponse(String message, String clientId) {
@@ -73,6 +79,10 @@ public class WsSessionManager {
         jobSessions.remove(clientId);
     }
 
+    public void removeJobStatisticsSession(String clientId) {
+        jobStatisticsSessions.remove(clientId);
+    }
+
     @ConsumeEvent("hotnews")
     public void publishHotNewsWsMessage(String message) {
         broadcastHotNews(message);
@@ -86,6 +96,11 @@ public class WsSessionManager {
         } catch (JsonProcessingException e) {
             log.error("Fail sending response to WS",e);
         }
+    }
+
+    @ConsumeEvent("job-stats")
+    public void publishJobStats(String message){
+        broadcastJobStatistics(message);
     }
 
     @Scheduled(every = "30s")
@@ -115,5 +130,17 @@ public class WsSessionManager {
             else
                 removeJobSession(k);
         });
+    }
+
+    public CompletionStage<Void> broadcastJobStatistics(Object message) {
+        return CompletableFuture.runAsync(() -> {
+            jobStatisticsSessions.values().forEach(s -> {
+                s.getAsyncRemote().sendObject(message, result -> {
+                    if (result.getException() != null) {
+                        log.error("Unable to send message", result.getException());
+                    }
+                });
+            });
+        }, executor);
     }
 }

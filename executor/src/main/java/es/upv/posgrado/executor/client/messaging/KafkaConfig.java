@@ -28,6 +28,8 @@ public class KafkaConfig {
     @ConfigProperty(name = "app.producer.acks")
     String acks;
 
+    @ConfigProperty(name = "app.kafka.max.message.bytes")
+    Integer maxRequestSizeBytes;
 
     private String getHostname() {
         try {
@@ -55,7 +57,7 @@ public class KafkaConfig {
         // Acknowledgement
         props.putIfAbsent(ProducerConfig.ACKS_CONFIG, acks);
 
-        props.putIfAbsent(ProducerConfig.MAX_REQUEST_SIZE_CONFIG,3719907);
+        props.putIfAbsent(ProducerConfig.MAX_REQUEST_SIZE_CONFIG,maxRequestSizeBytes);
 
         return new KafkaProducer<>(props);
     }

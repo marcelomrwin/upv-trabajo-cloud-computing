@@ -10,7 +10,8 @@ import useAlert from "./alert/useAlert";
 import AlertPopup from "./alert/AlertPopup";
 import keycloak from "../Keycloak";
 import AuthorizedElement from "../security/AuthorizedElement";
-
+import {GiGearHammer} from "react-icons/gi";
+import {generateClientId} from "../helpers/generateId";
 const JobList = (props) => {
     const [items, setJobs] = useState([]);
     const [searchTitle, setSearchTitle] = useState("");
@@ -29,7 +30,7 @@ const JobList = (props) => {
         setSearchTitle(searchTitle);
     };
 
-    const onChangeSearchId = (e) =>{
+    const onChangeSearchId = (e) => {
         const searchId = e.target.value;
         setSearchId(searchId);
     }
@@ -37,8 +38,8 @@ const JobList = (props) => {
     const getRequestParams = (searchId, searchTitle, page, pageSize) => {
         let params = {};
 
-        if (searchId){
-        params["id"] = searchId;
+        if (searchId) {
+            params["id"] = searchId;
         }
 
         if (searchTitle) {
@@ -110,16 +111,6 @@ const JobList = (props) => {
 
     var connected = false;
     var socket;
-
-    const generateClientId = (length) => {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
-            result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
-        return result;
-    }
 
     const wsconnect = () => {
         if (!connected) {
@@ -259,6 +250,10 @@ const JobList = (props) => {
     return (
         <Container>
             <AlertPopup/>
+            <div className="bg-dark w-100 pe-auto text-white text-center"><GiGearHammer className="bi  mx-auto mb-1"
+                                                                                        fontSize="1em"/> Submitted Jobs
+            </div>
+            <div className="p-1"></div>
             <div className="list row">
                 <Row className="justify-content-md-center">
                     <Col md="2">

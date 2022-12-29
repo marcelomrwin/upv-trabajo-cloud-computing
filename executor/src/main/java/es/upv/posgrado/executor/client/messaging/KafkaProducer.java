@@ -19,6 +19,10 @@ public class KafkaProducer {
     @ConfigProperty(name = "mp.messaging.outgoing.job-out.topic", defaultValue = "job-response")
     String jobResponseTopic;
 
+    @ConfigProperty(name = "mp.messaging.outgoing.job-compensation.topic", defaultValue = "job-compensation")
+    String jobCompensation;
+
+
     //FAULT TOLERANCE (NETWORKING)
     public void sendMessage(Job job) {
         try {
@@ -33,7 +37,8 @@ public class KafkaProducer {
                             "Offset: " + recordMetadata.offset() + "\n" +
                             "Timestamp: " + recordMetadata.timestamp());
                 } else {
-                    log.error("Error while producing message to kafka cluster", e);
+                    log.error("Error while producing message to kafka cluster for job\nId:"+job.getId()+"\nTitle:"+job.getTitle()+"\nStatus:"+job.getStatus(), e);
+                    //TODO dead letter queue?
                 }
             });
 

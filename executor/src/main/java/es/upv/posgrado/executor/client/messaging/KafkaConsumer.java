@@ -55,13 +55,13 @@ public class KafkaConsumer {
     public CompletionStage<Void> hotNewsConsumer(Message<String> message) {
         try {
             String payload = message.getPayload();
-            log.warn("receive new Message\n{}\n", payload);
+            log.debug("receive new Message\n{}\n", payload);
             NewsDTO hotNews = objectMapper.readValue(payload, NewsDTO.class);
             newsService.saveNews(hotNews);
         } catch (Exception e) {
             log.error("Fail processing the message", e);
         } finally {
-            log.warn("Responding ACK");
+            log.debug("Responding ACK");
             return message.ack();
         }
     }

@@ -11,6 +11,8 @@ import useAlert from "./alert/useAlert";
 import AlertPopup from "./alert/AlertPopup";
 import AuthorizedElement from "../security/AuthorizedElement";
 import keycloak from "../Keycloak";
+import {BsNewspaper} from "react-icons/bs";
+import {generateClientId} from "../helpers/generateId";
 
 const NewsList = (props) => {
     const [items, setNews] = useState([]);
@@ -146,16 +148,6 @@ const NewsList = (props) => {
     var connected = false;
     var socket;
 
-    const generateClientId = (length) => {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
-            result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
-        return result;
-    }
-
     const wsconnect = () => {
         if (!connected) {
             var clientId = generateClientId(6);
@@ -174,7 +166,7 @@ const NewsList = (props) => {
                 console.log("Connected to the web socket with clientId [" + clientId + "]");
             };
             socket.onmessage = (m) => {
-                if (m.data == 'PING') {
+                if (m.data === 'PING') {
                     console.log('Receiving PING from the server, respond with PONG');
                     socket.send('PONG');
                 } else {
@@ -206,6 +198,8 @@ const NewsList = (props) => {
     return (
         <Container>
             <AlertPopup/>
+            <div className="bg-dark w-100 pe-auto text-white text-center"><BsNewspaper className="bi  mx-auto mb-1" fontSize="1em"/>  Recent News</div>
+            <div className="p-1"></div>
             <div className="list row">
                 <Row className="justify-content-md-center">
                     <Col>

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import es.upv.posgrado.api.model.HotNews;
 import es.upv.posgrado.api.model.Job;
 import es.upv.posgrado.common.model.NewsStatus;
+import es.upv.posgrado.common.model.monitoring.MonitoringResponse;
 import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
 import io.smallrye.reactive.messaging.annotations.Blocking;
@@ -35,7 +36,7 @@ public class KafkaConsumer {
     public CompletionStage<Void> hotNewsConsumer(Message<String> message) {
         try {
             String payload = message.getPayload();
-            log.warn("receive new Message\n{}\n", payload);
+            log.debug("receive new Message\n{}\n", payload);
             HotNews hotNews = objectMapper.readValue(payload, HotNews.class);
             hotNews.setStatus(NewsStatus.RECENT);
             hotNews.persistAndFlush();
@@ -45,7 +46,6 @@ public class KafkaConsumer {
         } catch (Exception e) {
             log.error("Fail processing the message", e);
         } finally {
-            log.warn("Responding ACK");
             return message.ack();
         }
     }
@@ -57,6 +57,7 @@ public class KafkaConsumer {
     public CompletionStage<Void> jobResponseConsumer(Message<Job> message) {
         try {
             Job job = message.getPayload();
+            log.debug("receive new Message\n{}\n", job);
             Panache.getEntityManager().merge(job);
             Panache.getEntityManager().flush();
 
@@ -70,11 +71,32 @@ public class KafkaConsumer {
 
         } catch (Exception e) {
             log.error("Fail in [jobResponseConsumer] processing the message", e);
-            //dead letter channel?
+            //TODO dead letter channel?
         } finally {
-            log.warn("Responding ACK");
             return message.ack();
         }
     }
 
+    //mp.messaging.incoming.job-stats.topic=job-statistics
+    @Incoming("job-stats")
+    public CompletionStage<Void> jobStatisticsConsumer(Message<MonitoringResponse> message) {
+        try {
+            MonitoringResponse stats = message.getPayload();
+
+            //TODO sent history to the client
+            if (stats.getStatisticsHistory() != null)
+                stats.getStatisticsHistory().clear();
+            if (stats.getEventHistory() != null)
+                stats.getEventHistory().clear();
+
+            log.debug("receive message and publish stats\n{}\n", stats);
+            eventBus.publish("job-stats", objectMapper.writeValueAsString(stats));
+
+        } catch (Exception e) {
+            log.error("Fail in [jobStatisticsConsumer] processing the message", e);
+            //TODO dead letter channel?
+        } finally {
+            return message.ack();
+        }
+    }
 }

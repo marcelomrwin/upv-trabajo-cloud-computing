@@ -63,9 +63,9 @@ public class NewsScheduleJob {
     public void processNews() {
         try {
             NewsService newsService = newsServiceList.get(serviceClientIndex);
-            log.info("\n=====\nPROCESSING INSTANCE {} INDEX {}", newsService.getClass().getName(), serviceClientIndex);
+            log.debug("\n=====\nPROCESSING INSTANCE {} INDEX {}", newsService.getClass().getName(), serviceClientIndex);
             Set<NewsDTO> newsDTOSet = newsService.getNews();
-            log.info("Processing {} news", newsDTOSet.size());
+            log.debug("Processing {} news", newsDTOSet.size());
             processorService.saveNewsFromArticle(newsDTOSet);
         } catch (PersistenceException persistenceException) {
             log.error("Persistence Exception {}", persistenceException.getMessage());
@@ -80,7 +80,7 @@ public class NewsScheduleJob {
                 switch (wae.getResponse().getStatus()) {
                     case 429:
                     case 426: {
-                        log.info("Generating news from Qaurkus RSS Feed https://quarkus.io/feed.xml");
+                        log.debug("Generating news from Qaurkus RSS Feed https://quarkus.io/feed.xml");
                         Set<NewsDTO> newsDTOSet = getNewsFromQuarkusFeed(); //contingence
                         processorService.saveNewsFromArticle(newsDTOSet);
                         break;
@@ -124,10 +124,10 @@ public class NewsScheduleJob {
     }
 
     private void rotateServiceIndex() {
-        log.warn("\n=====\nACTIVATING FAULT TOLERANCE. ACTUAL INDEX {} WITH INSTANCE OF TYPE {}\n=====", serviceClientIndex, newsServiceList.get(serviceClientIndex).getClass().getName());
+        log.info("\n=====\nACTIVATING FAULT TOLERANCE. ACTUAL INDEX {} WITH INSTANCE OF TYPE {}\n=====", serviceClientIndex, newsServiceList.get(serviceClientIndex).getClass().getName());
         serviceClientIndex++;
         if (serviceClientIndex >= newsServiceList.size()) serviceClientIndex = 0;
-        log.warn("\n=====\nNEW INDEX {} WITH INSTANCE {}\n=====", serviceClientIndex, newsServiceList.get(serviceClientIndex).getClass().getName());
+        log.info("\n=====\nNEW INDEX {} WITH INSTANCE {}\n=====", serviceClientIndex, newsServiceList.get(serviceClientIndex).getClass().getName());
     }
 
     private void fallback() {

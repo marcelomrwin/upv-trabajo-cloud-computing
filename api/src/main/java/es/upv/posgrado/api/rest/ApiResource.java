@@ -18,6 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 import javax.annotation.security.RolesAllowed;
+import javax.enterprise.context.control.ActivateRequestContext;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -43,6 +44,7 @@ public class ApiResource {
     @Path("/hotnews")
     @GET
     @Authenticated
+    @Operation(description = "Returns all news suitable for publication without pagination")
     public Response getHotNews() {
         return Response.ok(HotNews.list("status = ?1", Sort.ascending("id"), NewsStatus.RECENT)).build();
     }
@@ -50,6 +52,7 @@ public class ApiResource {
     @Path("/hotnews/paged")
     @GET
     @Authenticated
+    @Operation(description = "Returns all news suitable for publication with pagination")
     public Response getHotNewsPaged(@QueryParam("title") String title, @QueryParam("page") int page, @QueryParam("size") int size) {
         return Response.status(Response.Status.OK).entity(newsRepository.findAllPaged(title, page, size)).build();
     }
@@ -58,8 +61,8 @@ public class ApiResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
-            summary = "Return jobs from repository",
-            description = "A list of jobs and his status"
+            summary = "Return all jobs from repository using paging",
+            description = "A list of jobs and its status"
     )
     @APIResponses(
             {
@@ -71,7 +74,7 @@ public class ApiResource {
             @Parameter(name = "title", description = "Title to search", required = false)
     })
     @RolesAllowed({"ADMIN"})
-    public Response getJobs(@QueryParam("id") Long id, @QueryParam("title") String title, @QueryParam("page") @NotNull @DefaultValue("0") int page, @QueryParam("size") @NotNull @DefaultValue("10") int size) {
+    public Response getJobsInfo(@QueryParam("id") Long id, @QueryParam("title") String title, @QueryParam("page") @NotNull @DefaultValue("0") int page, @QueryParam("size") @NotNull @DefaultValue("10") int size) {
         return Response.status(Response.Status.OK).entity(jobRepository.findAllPaged(id, title, page, size)).build();
     }
 
@@ -79,6 +82,8 @@ public class ApiResource {
     @Path("/jobs/myjobs")
     @Produces(MediaType.APPLICATION_JSON)
     @Authenticated
+    @Operation(description = "Returns jobs submitted by the authenticated user")
+    @ActivateRequestContext
     public Response getJobsSubmittedBy(@QueryParam("id") Long id, @QueryParam("title") String title, @QueryParam("page") @NotNull @DefaultValue("0") int page, @QueryParam("size") @NotNull @DefaultValue("10") int size) {
         return Response.status(Response.Status.OK).entity(jobRepository.findSubmittedBy(identity.get().getPrincipal().getName(), id, title, page, size)).build();
     }
@@ -87,7 +92,9 @@ public class ApiResource {
     @Path("/jobs")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @RolesAllowed({"ADMIN", "USER"})
-    public Response sendJob(@FormParam("id") Long id) {
+    @Operation(description = "Submit the news for publication. Starts a job request.")
+    @ActivateRequestContext
+    public Response submitJob(@FormParam("id") Long id) {
         try {
             Job job = apiService.createJob(id, identity.get().getPrincipal().getName());
             return Response.status(Response.Status.CREATED).entity(job).build();
@@ -95,6 +102,8 @@ public class ApiResource {
             return Response.status(Response.Status.BAD_REQUEST).entity(String.format("Job %s was already submitted with status %s", e.getJobId(), e.getJobStatus())).build();
         } catch (HotNewsNotExistsException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(String.format("Hot News %s does not exists", id)).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(String.format("Unexpected Error for Job %s. %s", id, e.getMessage())).build();
         }
     }
 
@@ -102,8 +111,18 @@ public class ApiResource {
     @Path("/jobs/result")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @RolesAllowed({"ADMIN", "USER"})
+    @Operation(description = "Allows the download of the completed work. The published news")
+    @ActivateRequestContext
     public Response downloadJobResult(@QueryParam("id") @NotNull Long id) {
         Job job = jobRepository.findByIdOptional(id).orElseThrow(() -> new WebApplicationException(Response.status(Response.Status.NOT_FOUND).entity("Job ID " + id + " not found").build()));
+
+        SecurityIdentity securityIdentity = identity.get();
+        if (!securityIdentity.hasRole("ADMIN")) {
+            String userLogged = securityIdentity.getPrincipal().getName();
+            if (!userLogged.equals(job.getSubmittedBy()))
+                throw new WebApplicationException(Response.status(Response.Status.FORBIDDEN).entity("User " + userLogged + " does not have access to the Job " + id).build());
+        }
+
         try {
             Response.ResponseBuilder response = Response.ok(job.getResult());
             response.header("Content-Disposition", "attachment;filename=" + id + ".html");

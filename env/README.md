@@ -19,3 +19,32 @@ docker-compose down && docker-compose pull && docker-compose --env-file .env.dev
 * PgAdmin http://localhost:9082/
 * RedisInsight http://localhost:9085/
 * Keycloak http://localhost:8180/ (admin/admin)
+
+## Managing Kafka
+```json
+{
+  "partitions": [
+    {
+      "topic": "job-response",
+      "partition": 0,
+      "offset": -1
+    }
+  ],
+  "version": 1
+}
+```
+
+## Important, change kafka message size
+```shell
+./kafka-configs.sh --bootstrap-server localhost:19092 \
+                --alter --entity-type topics \
+                --entity-name job-response \
+                --add-config max.message.bytes=10485880
+```
+
+
+```shell
+./kafka-topics.sh --bootstrap-server localhost:19092 --describe --topic job-response
+./kafka-configs.sh --alter --bootstrap-server localhost:19092 --entity-type topics --entity-name job-response --add-config retention.ms=43200000 (12 hours)
+./kafka-configs.sh --alter --bootstrap-server localhost:19092 --entity-type topics --entity-name job-response --add-config retention.ms=86400000 (24 hours)
+```

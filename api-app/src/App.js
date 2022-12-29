@@ -14,6 +14,7 @@ import Dashboard from "./components/Dashboard";
 import PrivateRoute from "./helpers/PrivateRoute";
 import {ReactKeycloakProvider, useKeycloak} from "@react-keycloak/web";
 import Nav from "./components/Nav";
+import JobStatistics from "./components/JobStatistics";
 
 function App() {
 
@@ -38,6 +39,7 @@ function App() {
                                         <JobList/>
                                     </PrivateRoute>
                                 }/>
+                                <Route path="/statistics" element={<JobStatistics/>}/>
                             </Routes>
 
                         </div>
