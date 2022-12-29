@@ -48,3 +48,6 @@ docker-compose down && docker-compose pull && docker-compose --env-file .env.dev
 ./kafka-configs.sh --alter --bootstrap-server localhost:19092 --entity-type topics --entity-name job-response --add-config retention.ms=43200000 (12 hours)
 ./kafka-configs.sh --alter --bootstrap-server localhost:19092 --entity-type topics --entity-name job-response --add-config retention.ms=86400000 (24 hours)
 ```
+
+## Troubleshooting
+When trying to start services and the services freezes, normally is something related to volumes. Try remove untagged volumes using `docker volume ls` and `docker volume rm`

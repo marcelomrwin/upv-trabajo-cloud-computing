@@ -39,7 +39,6 @@ public class ApiService {
                 .orElseThrow( ()-> new HotNewsNotExistsException(id));
     }
 
-    @Transactional(Transactional.TxType.MANDATORY)
     private Job createJob(HotNews hotNews,String userName) {
 
         Job job = Job.builder().id(hotNews.getId())
