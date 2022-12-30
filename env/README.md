@@ -5,17 +5,17 @@ docker-compose -f docker-compose-dev.yaml down --rmi all && docker-compose -f do
 ```
 
 ```shell
-docker-compose -f docker-compose-dev.yaml down && docker-compose -f docker-compose-dev.yaml pull && docker-compose -f docker-compose-dev.yaml --env-file .env.dev up
+docker-compose -f docker-compose-dev.yaml down && docker-compose -f docker-compose-dev.yaml pull && docker-compose -f docker-compose-dev.yaml --env-file .env up
 ```
 
 ```shell
-docker-compose down && docker-compose pull && docker-compose --env-file .env.dev up
+docker-compose down && docker-compose pull && docker-compose --env-file .env up
 ```
 
 ## Services
 * Kafka UI http://localhost:9080/
 * MinIO Console http://localhost:9001/ (admin/password)
-* MongoDB Express http://localhost:9081/
+* MongoDB Express http://localhost:9081/ (admin/pass)
 * PgAdmin http://localhost:9082/
 * RedisInsight http://localhost:9085/
 * Keycloak http://localhost:8180/ (admin/admin)
@@ -47,6 +47,10 @@ docker-compose down && docker-compose pull && docker-compose --env-file .env.dev
 ./kafka-topics.sh --bootstrap-server localhost:19092 --describe --topic job-response
 ./kafka-configs.sh --alter --bootstrap-server localhost:19092 --entity-type topics --entity-name job-response --add-config retention.ms=43200000 (12 hours)
 ./kafka-configs.sh --alter --bootstrap-server localhost:19092 --entity-type topics --entity-name job-response --add-config retention.ms=86400000 (24 hours)
+```
+
+```shell
+docker-compose down && docker-compose pull && docker-compose --env-file .env up
 ```
 
 ## Troubleshooting
