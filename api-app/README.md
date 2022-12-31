@@ -92,6 +92,11 @@ npm install react-bootstrap
 ln -s ../env/dev/.env $(pwd)/.env
 ```
 
+## Fast
+```shell
+docker build --tag marcelodsales/api-app -f docker/Dockerfile.fast .
+```
+
 
 ## Create Docker images Multiarch
 ```shell

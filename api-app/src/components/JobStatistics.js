@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react";
 import AlertPopup from "./alert/AlertPopup";
 import Container from "react-bootstrap/Container";
-import keycloak from "../Keycloak";
 import {generateClientId} from "../helpers/generateId";
 import useAlert from "./alert/useAlert";
 import {Card, Col, Row} from "react-bootstrap";
 import {BsCalculator} from "react-icons/bs";
+import UserService from "../security/keycloak/UserService";
 
 const JobStatistics = () => {
 
@@ -50,8 +50,8 @@ const JobStatistics = () => {
         if (!connected) {
             var clientId = generateClientId(6);
 
-            if (keycloak && keycloak.token) {
-                clientId = keycloak.tokenParsed.preferred_username;
+            if (UserService.isLoggedIn()) {
+                clientId = UserService.getUsername();
             }
 
             // eslint-disable-next-line no-restricted-globals

@@ -8,10 +8,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {Col} from "react-bootstrap";
 import useAlert from "./alert/useAlert";
 import AlertPopup from "./alert/AlertPopup";
-import keycloak from "../Keycloak";
 import AuthorizedElement from "../security/AuthorizedElement";
 import {GiGearHammer} from "react-icons/gi";
 import {generateClientId} from "../helpers/generateId";
+import UserService from "../security/keycloak/UserService";
 
 const JobList = (props) => {
     const [items, setJobs] = useState([]);
@@ -68,7 +68,7 @@ const JobList = (props) => {
     const retrieveJobs = () => {
         const params = getRequestParams(searchId, searchTitle, page, pageSize);
 
-        if (keycloak.hasRealmRole('ADMIN') || keycloak.hasResourceRole('ADMIN')) {
+        if (UserService.hasRole(['ADMIN'])) {
             JobsService.getJobs(params)
                 .then(success)
                 .catch(fail);
@@ -119,8 +119,8 @@ const JobList = (props) => {
         if (!connected) {
             var clientId = generateClientId(6);
 
-            if (keycloak && keycloak.token) {
-                clientId = keycloak.tokenParsed.preferred_username;
+            if (UserService.isLoggedIn() && UserService.getToken()) {
+                clientId = UserService.getUsername();
             }
 
             // eslint-disable-next-line no-restricted-globals

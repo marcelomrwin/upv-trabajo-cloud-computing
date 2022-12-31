@@ -66,6 +66,7 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_METRICS_PORT: 9997
       LOGGING_LEVEL_ROOT: error
+      LOGGING_LEVEL_COM_PROVECTUS: error
     networks:
       - kafka_network
 
@@ -162,6 +163,8 @@ services:
       PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 50
       PGADMIN_CONFIG_FILE_LOG_LEVEL: 50
       PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_DEFAULT_EMAIL: admin@mail.com
+      PGADMIN_DEFAULT_PASSWORD: password
     depends_on:
       - postgres-injector
       - postgres-api

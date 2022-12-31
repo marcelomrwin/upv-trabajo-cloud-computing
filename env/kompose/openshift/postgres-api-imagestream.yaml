@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: postgres-api
+  name: postgres-api
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - annotations: null
+      from:
+        kind: DockerImage
+        name: postgres:13
+      generation: null
+      importPolicy: {}
+      name: "13"
+      referencePolicy:
+        type: ""
+status:
+  dockerImageRepository: ""

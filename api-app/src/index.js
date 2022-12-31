@@ -5,15 +5,18 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import {AlertProvider} from "./components/alert/AlertContext";
+import UserService from "./security/keycloak/UserService";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+const renderApp = () => root.render(
     <AlertProvider>
         <BrowserRouter>
             <App/>
         </BrowserRouter>
     </AlertProvider>
 );
+
+UserService.initKeycloak(renderApp);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

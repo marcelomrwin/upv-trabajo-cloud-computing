@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: executor
+  name: executor
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: executor
+  strategy:
+    resources: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: executor
+    spec:
+      containers:
+        - env:
+            - name: INJECTOR_ENDPOINT
+            - name: KAFKA_SERVERS
+            - name: MINIO_ENDPOINT
+            - name: MINIO_ROOT_PASSWORD
+            - name: MINIO_ROOT_USER
+            - name: MONGODB_DB_NAME
+            - name: MONGODB_DB_PASSWORD
+            - name: MONGODB_DB_USER
+            - name: MONGODB_URL
+            - name: REDIS_ENDPOINT
+            - name: REDIS_PASSWORD
+            - name: TZ
+              value: Europe/Madrid
+          image: ' '
+          name: executor
+          ports:
+            - containerPort: 8080
+          resources: {}
+      hostname: executor
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - executor
+        from:
+          kind: ImageStreamTag
+          name: executor:latest
+      type: ImageChange
+status:
+  availableReplicas: 0
+  latestVersion: 0
+  observedGeneration: 0
+  replicas: 0
+  unavailableReplicas: 0
+  updatedReplicas: 0

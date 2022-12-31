@@ -7,5 +7,6 @@ const keycloakConfig = {
     realm: "cc",
     clientId: "api-app",
 }
-const keycloak = new Keycloak(keycloakConfig);
-export default keycloak;
+const kc = new Keycloak(keycloakConfig);
+
+export default kc;

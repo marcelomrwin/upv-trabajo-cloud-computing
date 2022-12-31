@@ -10,9 +10,9 @@ import JobsService from "../services/JobsService";
 import useAlert from "./alert/useAlert";
 import AlertPopup from "./alert/AlertPopup";
 import AuthorizedElement from "../security/AuthorizedElement";
-import keycloak from "../Keycloak";
 import {BsNewspaper} from "react-icons/bs";
 import {generateClientId} from "../helpers/generateId";
+import UserService from "../security/keycloak/UserService";
 
 const NewsList = (props) => {
     const [items, setNews] = useState([]);
@@ -154,8 +154,8 @@ const NewsList = (props) => {
         if (!connected) {
             var clientId = generateClientId(6);
 
-            if (keycloak && keycloak.token) {
-                clientId = keycloak.tokenParsed.preferred_username;
+            if (UserService.isLoggedIn() && UserService.getToken()) {
+                clientId = UserService.getUsername();
             }
 
             // eslint-disable-next-line no-restricted-globals

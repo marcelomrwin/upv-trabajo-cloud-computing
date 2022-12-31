@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: observer
+  name: observer
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: observer
+  strategy:
+    resources: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: observer
+    spec:
+      containers:
+        - env:
+            - name: KAFKA_SERVERS
+            - name: OBSERVER_METRICS_SCHEDULE
+            - name: REDIS_ENDPOINT
+            - name: REDIS_PASSWORD
+          image: ' '
+          name: observer
+          ports:
+            - containerPort: 8080
+          resources: {}
+      hostname: observer
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - observer
+        from:
+          kind: ImageStreamTag
+          name: observer:latest
+      type: ImageChange
+status:
+  availableReplicas: 0
+  latestVersion: 0
+  observedGeneration: 0
+  replicas: 0
+  unavailableReplicas: 0
+  updatedReplicas: 0

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose --file ../docker-compose.yaml convert
+    kompose.version: 1.27.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: observer
+  name: observer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: observer
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose --file ../docker-compose.yaml convert
+        kompose.version: 1.27.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: observer
+    spec:
+      containers:
+        - env:
+            - name: KAFKA_SERVERS
+            - name: OBSERVER_METRICS_SCHEDULE
+            - name: REDIS_ENDPOINT
+            - name: REDIS_PASSWORD
+          image: marcelodsales/observer
+          name: observer
+          ports:
+            - containerPort: 8080
+          resources: {}
+      hostname: observer
+      restartPolicy: Always
+status: {}

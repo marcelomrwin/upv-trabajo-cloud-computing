@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  annotations:
+    kompose.service.type: LoadBalancer
+  creationTimestamp: null
+  labels:
+    io.kompose.service: keycloak
+  name: keycloak
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: keycloak
+  strategy:
+    resources: {}
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: keycloak
+    spec:
+      containers:
+        - args:
+            - start-dev
+            - --import-realm
+            - --auto-build
+            - --http-enabled=true
+            - --hostname-strict-https=false
+            - --hostname-strict=false
+            - --proxy=edge
+          env:
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_PASSWORD
+              value: password
+            - name: KC_DB_POOL_INITIAL_SIZE
+              value: "1"
+            - name: KC_DB_POOL_MAX_SIZE
+              value: "5"
+            - name: KC_DB_POOL_MIN_SIZE
+              value: "1"
+            - name: KC_DB_URL
+              value: jdbc:postgresql://postgres-keycloak:5432/keycloak
+            - name: KC_DB_USERNAME
+              value: keycloak
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_HTTP_PORT
+              value: "8080"
+            - name: KC_LOG
+              value: console,file
+            - name: KC_LOG_LEVEL
+              value: INFO,org.keycloak.transaction:warn,org.keycloak.services.scheduled:warn,org.hibernate:info,org.infinispan.protostream:info
+            - name: KC_METRICS_ENABLED
+              value: "true"
+            - name: KEYCLOAK_ADMIN
+              value: admin
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              value: admin
+            - name: TZ
+              value: Europe/Madrid
+          image: ' '
+          name: keycloak
+          ports:
+            - containerPort: 8080
+          resources: {}
+          volumeMounts:
+            - mountPath: /opt/keycloak/data/import
+              name: keycloak-claim0
+      hostname: keycloak
+      restartPolicy: Always
+      volumes:
+        - name: keycloak-claim0
+          persistentVolumeClaim:
+            claimName: keycloak-claim0
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - keycloak
+        from:
+          kind: ImageStreamTag
+          name: keycloak:20.0
+      type: ImageChange
+status:
+  availableReplicas: 0
+  latestVersion: 0
+  observedGeneration: 0
+  replicas: 0
+  unavailableReplicas: 0
+  updatedReplicas: 0

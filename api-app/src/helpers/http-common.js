@@ -1,6 +1,6 @@
 import axios from "axios";
+import UserService from "../security/keycloak/UserService";
 
-import keycloak from "../Keycloak";
 
 const API_ENDPOINT = window._env_.API_ENDPOINT;
 
@@ -12,8 +12,8 @@ var axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
-    if (keycloak.token){
-        config.headers["Authorization"] = 'Bearer '+ keycloak.token;
+    if (UserService.isLoggedIn() && UserService.getToken()){
+        config.headers["Authorization"] = 'Bearer '+ UserService.getToken();
     }
     return config;
 },(error) =>{

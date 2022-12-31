@@ -33,6 +33,7 @@ const Dashboard = () => {
                     <Accordion.Body className="text-start">
                         <p className="fw-bold">HomeWork prepared for the discipline of cloud computing implemented
                             by:</p>
+                        <p>V2</p>
                         <ul>
                             <li>Marcelo Daniel das Silva Sales</li>
                             <li>Giovanni Sabogal Cespedes</li>
@@ -741,7 +742,17 @@ const Dashboard = () => {
                             would be to find an alternative to the Imagemagick utility which requires a lot of packages
                             installed on the machine and makes the image grow too large.
                         </li>
-
+                        <li>
+                            Optimize the handling of messages received with websocket. The current behavior performs a
+                            new database search, but each event brings the updated object with it. Use this event to
+                            fill the event table without having to return to the server.
+                        </li>
+                        <li>Use HTTPS on external connections</li>
+                        <li>Authentication and Authorization in Kafka</li>
+                        <li>We also identified a bug in the keycloak library for javascript regarding react. In some
+                            cases the logout function is called inadvertently and some React components are not
+                            notified. Open a bug or fix the crash and submit the Pull Request.
+                        </li>
                     </Accordion.Body>
                 </Accordion.Item>
             </Accordion>

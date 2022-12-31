@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  annotations:
+    kompose.service.type: LoadBalancer
+  creationTimestamp: null
+  labels:
+    io.kompose.service: api
+  name: api
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: api
+  strategy:
+    resources: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: api
+    spec:
+      containers:
+        - env:
+            - name: API_DB_HOST
+            - name: API_DB_NAME
+            - name: API_DB_PASSWORD
+            - name: API_DB_PORT
+            - name: API_DB_USER
+            - name: API_HTTP_PORT
+            - name: API_KEYCLOAK_CLIENT_ID
+            - name: API_KEYCLOAK_CLIENT_SECRET
+            - name: KAFKA_SERVERS
+            - name: KEYCLOAK_ENDPOINT
+            - name: TZ
+              value: Europe/Madrid
+          image: ' '
+          name: api
+          ports:
+            - containerPort: 8080
+          resources: {}
+      hostname: api
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - api
+        from:
+          kind: ImageStreamTag
+          name: api:latest
+      type: ImageChange
+status:
+  availableReplicas: 0
+  latestVersion: 0
+  observedGeneration: 0
+  replicas: 0
+  unavailableReplicas: 0
+  updatedReplicas: 0

@@ -1,15 +1,10 @@
-import {useKeycloak} from "@react-keycloak/web";
+import UserService from "./keycloak/UserService";
 
 const AuthorizedFunction = (roles) =>{
-    const [keycloak, initialized] = useKeycloak();
 
     const isAuthorized = () =>{
-        if (keycloak && roles){
-            return roles.some(r =>{
-               const realm = keycloak.hasRealmRole(r);
-               const resource = keycloak.hasResourceRole(r);
-               return realm || resource;
-            });
+        if (UserService && roles){
+            return UserService.hasRole(roles);
         }
         return false;
     }

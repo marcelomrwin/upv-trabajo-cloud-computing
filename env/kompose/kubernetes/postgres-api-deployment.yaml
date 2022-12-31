@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose --file ../docker-compose.yaml convert
+    kompose.version: 1.27.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: postgres-api
+  name: postgres-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: postgres-api
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose --file ../docker-compose.yaml convert
+        kompose.version: 1.27.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: postgres-api
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              value: apidb
+            - name: POSTGRES_PASSWORD
+            - name: POSTGRES_USER
+            - name: TZ
+              value: Europe/Madrid
+          image: postgres:13
+          name: postgres-api
+          ports:
+            - containerPort: 5432
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: pgapi-data
+      hostname: postgres-api
+      restartPolicy: Always
+      volumes:
+        - name: pgapi-data
+          persistentVolumeClaim:
+            claimName: pgapi-data
+status: {}

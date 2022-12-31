@@ -33,6 +33,7 @@ services:
     ports:
       - ${API_HTTP_PORT}:8080
     environment:
+      - TZ=Europe/Madrid
       - API_HTTP_PORT=${API_HTTP_PORT}
       - API_DB_HOST=${API_DB_HOST}
       - API_DB_USER=${API_DB_USER}
@@ -57,6 +58,8 @@ services:
     image: ${POSTGRES_IMAGE:-postgres:13}
     container_name: postgres-api
     hostname: postgres-api
+    ports:
+      - "5432"
     environment:
       - TZ=Europe/Madrid
       - POSTGRES_DB=${API_DB_NAME:-apidb}
@@ -105,6 +108,8 @@ services:
     image: ${POSTGRES_IMAGE:-postgres:13}
     container_name: postgres-injector
     hostname: postgres-injector
+    ports:
+      - "5432"
     environment:
       - TZ=Europe/Madrid
       - POSTGRES_DB=${INJECTOR_DB_NAME:-newsdb}
@@ -113,12 +118,79 @@ services:
     volumes:
       - pginjector_data:/var/lib/postgresql/data
 
+  executor:
+    image: marcelodsales/executor
+    container_name: executor
+    hostname: executor
+    restart: always
+    environment:
+      - TZ=Europe/Madrid
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - REDIS_ENDPOINT=${REDIS_ENDPOINT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - KAFKA_SERVERS=${KAFKA_SERVERS}
+      - INJECTOR_ENDPOINT=${INJECTOR_ENDPOINT}
+      - MONGODB_DB_USER=${MONGODB_DB_USER}
+      - MONGODB_DB_PASSWORD=${MONGODB_DB_PASSWORD}
+      - MONGODB_URL=${MONGODB_URL}
+      - MONGODB_DB_NAME=${MONGODB_DB_NAME}
+    depends_on:
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      mongodb-executor:
+        condition: service_started
+
+  mongodb-executor:
+    image: mongo:4.4
+    container_name: mongodb-executor
+    hostname: mongodb-executor
+    restart: always
+    ports:
+      - "27017"
+    environment:
+      - TZ=Europe/Madrid
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_INIT_ROOT_USER:-root}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_INIT_ROOT_PASSWD:-root}
+      - MONGO_INITDB_DATABASE=${MONGODB_DB_NAME:-executordb}
+      - MONGO_INITDB_USER=${MONGODB_DB_USER:-mongoadmin}
+      - MONGO_INITDB_PWD=${MONGODB_DB_PASSWORD:-mongopasswd}
+    volumes:
+      - mongoexecutor_data_4:/data/db
+      - ./docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+    depends_on:
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+
+  observer:
+    image: marcelodsales/observer
+    container_name: observer
+    hostname: observer
+    restart: always
+    environment:
+      - OBSERVER_METRICS_SCHEDULE=${OBSERVER_METRICS_SCHEDULE}
+      - REDIS_ENDPOINT=${REDIS_ENDPOINT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - KAFKA_SERVERS=${KAFKA_SERVERS}
+    depends_on:
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.8
     container_name: zookeeper
     restart: always
     ports:
-      - "2181:2181"
+      - "2181"
     volumes:
       - "zookeeper_data:/bitnami"
     environment:
@@ -129,6 +201,8 @@ services:
     container_name: kafka
     hostname: kafka
     restart: always
+    ports:
+      - "9092"
     volumes:
       - "kafka_data:/bitnami"
     environment:
@@ -174,6 +248,7 @@ services:
     command: server /data --console-address ":9001"
     image: quay.io/minio/minio:latest
     ports:
+      - "9000"
       - '9001:9001'
     volumes:
       - minion_data:/data
@@ -186,29 +261,6 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-
-  mongodb-executor:
-    image: mongo:4.4
-    container_name: mongodb-executor
-    hostname: mongodb-executor
-    restart: always
-    ports:
-      - "27017:27017"
-    environment:
-      - TZ=Europe/Madrid
-      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_INIT_ROOT_USER:-root}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_INIT_ROOT_PASSWD:-root}
-      - MONGO_INITDB_DATABASE=${MONGODB_DB_NAME:-executordb}
-      - MONGO_INITDB_USER=${MONGODB_DB_USER:-mongoadmin}
-      - MONGO_INITDB_PWD=${MONGODB_DB_PASSWORD:-mongopasswd}
-    volumes:
-      - mongoexecutor_data_4:/data/db
-      - ./docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
-    depends_on:
-      zookeeper:
-        condition: service_started
-      kafka:
-        condition: service_healthy
 
   mongo-express:
     image: mongo-express
@@ -248,7 +300,7 @@ services:
     image: redis:7.0.7-alpine
     hostname: redis
     ports:
-      - "6379:6379"
+      - "6379"
     restart: always
     ulimits:
       memlock:
@@ -273,7 +325,7 @@ services:
     container_name: postgres-keycloak
     hostname: postgres-keycloak
     ports:
-      - ${KEYCLOAK_DB_PORT:-5432}:5432
+      - "5432"
     volumes:
       - postgres_keycloak_data:/var/lib/postgresql/data
     environment:
