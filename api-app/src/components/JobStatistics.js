@@ -1,14 +1,16 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import AlertPopup from "./alert/AlertPopup";
 import Container from "react-bootstrap/Container";
 import keycloak from "../Keycloak";
 import {generateClientId} from "../helpers/generateId";
 import useAlert from "./alert/useAlert";
-import {Col, Form, Row} from "react-bootstrap";
+import {Card, Col, Row} from "react-bootstrap";
 import {BsCalculator} from "react-icons/bs";
-import {Card} from "react-bootstrap";
 
 const JobStatistics = () => {
+
+    const API_URL_BASE = window._env_.API_URL_BASE;
+
     const [stats, setStats] = useState({
         currentStatistics: {
             reportDate: new Date(),
@@ -53,7 +55,7 @@ const JobStatistics = () => {
             }
 
             // eslint-disable-next-line no-restricted-globals
-            var wsUrl = "ws://" + "localhost:8083" + "/ws/statistics/" + clientId;
+            var wsUrl = "ws://" + API_URL_BASE + "/ws/statistics/" + clientId;
             console.log('Connect to ' + wsUrl);
             socket = new WebSocket(wsUrl);
 

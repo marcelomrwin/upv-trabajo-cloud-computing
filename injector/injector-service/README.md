@@ -1,4 +1,4 @@
-# executor Project
+# injector Project
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
@@ -33,34 +33,27 @@ The application, packaged as an _über-jar_, is now runnable using `java -jar ta
 
 ## Creating a native executable
 
-You can create a native executable using: 
+You can create a native executable using:
 ```shell script
 ./mvnw package -Pnative
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using: 
+Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
 ```shell script
 ./mvnw package -Pnative -Dquarkus.native.container-build=true
 ```
 
-You can then execute your native executable with: `./target/executor-1.0.0-SNAPSHOT-runner`
+You can then execute your native executable with: `./target/injector-1.0.0-SNAPSHOT-runner`
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
 
 ## Related Guides
 
-- Camel Minio ([guide](https://camel.apache.org/camel-quarkus/latest/reference/extensions/minio.html)): Store and retrieve objects from Minio Storage Service using Minio SDK
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
-
-## Image Requirements
-Image must have python3
-sudo dnf install imagemagick
-sudo apt install imagemagick
+- Scheduler - tasks ([guide](https://quarkus.io/guides/scheduler)): Schedule jobs and tasks
 
 Before fun, create a file or a link to a .env file.
 ```shell
-ln -s ../env/dev/.env $(pwd)/.env
+ln -s ../../env/dev/.env $(pwd)/.env
 ```
 
 ```shell
@@ -70,5 +63,5 @@ ln -s ../env/dev/.env $(pwd)/.env
 ## Generate docker image
 ```shell
 ./mvnw package -DskipTests -DskipScan -U
-docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/executor -f src/main/docker/Dockerfile.jvm .
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/injector -f src/main/docker/Dockerfile.jvm .
 ```

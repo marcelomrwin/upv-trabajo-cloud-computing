@@ -1,0 +1,24 @@
+FROM eclipse-temurin:17-centos7
+
+ENV LANGUAGE='en_US:en'
+
+RUN dnf update -y
+RUN dnf install -y python3 imagemagick
+
+RUN mkdir -p /deployments/lib/
+RUN mkdir -p /deployments/app/
+RUN mkdir -p /deployments/quarkus/
+
+COPY --chown=1001 target/quarkus-app/lib/ /deployments/lib/
+COPY --chown=1001 target/quarkus-app/*.jar /deployments/
+COPY --chown=1001 target/quarkus-app/app/ /deployments/app/
+COPY --chown=1001 target/quarkus-app/quarkus/ /deployments/quarkus/
+COPY --chown=1001
+COPY --chown=1001 target/*.jar /deployments/quarkus-run.jar
+
+EXPOSE 8080
+USER 1001
+ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+
+

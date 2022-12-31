@@ -7,18 +7,18 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/executor-jvm .
+# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/api-jvm .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/executor-jvm
+# docker run -i --rm -p 8080:8080 quarkus/api-jvm
 #
 # If you want to include the debug port into your docker image
 # you will have to expose the debug port (default 5005) like this :  EXPOSE 8080 5005
 #
 # Then run the container using :
 #
-# docker run -i --rm -p 8080:8080 quarkus/executor-jvm
+# docker run -i --rm -p 8080:8080 quarkus/api-jvm
 #
 # This image uses the `run-java.sh` script to run the application.
 # This scripts computes the command line to execute your Java application, and
@@ -78,15 +78,6 @@
 FROM registry.access.redhat.com/ubi8/openjdk-17:1.14
 
 ENV LANGUAGE='en_US:en'
-
-USER root
-RUN microdnf install -y python3 dnf
-RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-RUN microdnf update
-RUN microdnf install glibc
-RUN dnf update -y
-RUN dnf install -y ImageMagick-libs ImageMagick --skip-broken
-RUN dnf clean all && microdnf clean all
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/

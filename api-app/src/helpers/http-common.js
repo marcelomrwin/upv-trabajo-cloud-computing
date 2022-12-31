@@ -2,9 +2,10 @@ import axios from "axios";
 
 import keycloak from "../Keycloak";
 
+const API_ENDPOINT = window._env_.API_ENDPOINT;
 
 var axiosInstance = axios.create({
-    baseURL: "http://localhost:8083/api",
+    baseURL: API_ENDPOINT,
     headers: {
         "Content-type": "application/json",
     }

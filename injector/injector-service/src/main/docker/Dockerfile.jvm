@@ -79,6 +79,14 @@ FROM registry.access.redhat.com/ubi8/openjdk-17:1.14
 
 ENV LANGUAGE='en_US:en'
 
+USER root
+RUN microdnf install -y python3 dnf
+RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+RUN microdnf update
+RUN microdnf install glibc
+RUN dnf update -y
+RUN dnf install -y ImageMagick-libs ImageMagick --skip-broken
+RUN dnf clean all && microdnf clean all
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/

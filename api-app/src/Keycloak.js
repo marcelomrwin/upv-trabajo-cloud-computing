@@ -1,7 +1,9 @@
 import Keycloak from "keycloak-js";
 
+const KEYCLOAK_BASE_URL = window._env_.KEYCLOAK_BASE_URL;
+
 const keycloakConfig = {
-    url: "http://localhost:8180",
+    url: KEYCLOAK_BASE_URL,
     realm: "cc",
     clientId: "api-app",
 }

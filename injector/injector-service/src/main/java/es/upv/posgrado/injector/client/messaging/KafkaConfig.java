@@ -15,7 +15,7 @@ import java.util.Properties;
 
 @ApplicationScoped
 public class KafkaConfig {
-    @ConfigProperty(name = "app.kafka.bootstrap-servers", defaultValue = "localhost:19092")
+    @ConfigProperty(name = "app.kafka.bootstrap.servers", defaultValue = "localhost:19092")
     String kafkaBrokers;
 
     @ConfigProperty(name = "app.producer.clienId", defaultValue = "kafka-client-sb-producer-client")

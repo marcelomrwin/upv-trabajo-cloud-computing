@@ -6,6 +6,113 @@ networks:
 
 services:
 
+  api-app:
+    image: marcelodsales/api-app
+    container_name: api-app
+    hostname: api-app
+    restart: always
+    ports:
+      - "8091:80"
+    environment:
+      - KEYCLOAK_BASE_URL=${KEYCLOAK_BASE_URL}
+      - API_URL_BASE=${API_URL_BASE}
+      - API_ENDPOINT=${API_ENDPOINT}/api
+    depends_on:
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  api:
+    image: marcelodsales/api
+    container_name: api
+    hostname: api
+    restart: always
+    ports:
+      - ${API_HTTP_PORT}:8080
+    environment:
+      - API_HTTP_PORT=${API_HTTP_PORT}
+      - API_DB_HOST=${API_DB_HOST}
+      - API_DB_USER=${API_DB_USER}
+      - API_DB_PASSWORD=${API_DB_PASSWORD}
+      - API_DB_PORT=${API_DB_PORT}
+      - API_DB_NAME=${API_DB_NAME}
+      - KEYCLOAK_ENDPOINT=${KEYCLOAK_ENDPOINT}
+      - API_KEYCLOAK_CLIENT_ID=${API_KEYCLOAK_CLIENT_ID}
+      - API_KEYCLOAK_CLIENT_SECRET=${API_KEYCLOAK_CLIENT_SECRET}
+      - KAFKA_SERVERS=${KAFKA_SERVERS}
+    depends_on:
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      postgres-api:
+        condition: service_started
+    links:
+      - keycloak:localhost
+
+  postgres-api:
+    image: ${POSTGRES_IMAGE:-postgres:13}
+    container_name: postgres-api
+    hostname: postgres-api
+    environment:
+      - TZ=Europe/Madrid
+      - POSTGRES_DB=${API_DB_NAME:-apidb}
+      - POSTGRES_PASSWORD=${API_DB_PASSWORD}
+      - POSTGRES_USER=${API_DB_USER}
+    volumes:
+      - pgapi_data:/var/lib/postgresql/data
+
+  injector:
+    image: marcelodsales/injector
+    container_name: injector
+    hostname: injector
+    restart: always
+    ports:
+      - ${INJECTOR_HTTP_PORT}:8080
+    environment:
+      - TZ=Europe/Madrid
+      - INJECTOR_CRON=${INJECTOR_CRON}
+      - INJECTOR_DB_USER=${INJECTOR_DB_USER}
+      - INJECTOR_DB_PASSWORD=${INJECTOR_DB_PASSWORD}
+      - INJECTOR_DB_HOST=${INJECTOR_DB_HOST}
+      - INJECTOR_DB_PORT=${INJECTOR_DB_PORT}
+      - INJECTOR_DB_NAME=${INJECTOR_DB_NAME}
+      - INJECTOR_HTTP_PORT=${INJECTOR_HTTP_PORT}
+      - INJECTOR_MEDIASTACK_APIKEY=${INJECTOR_MEDIASTACK_APIKEY}
+      - INJECTOR_MEDIASTACK_URL=${INJECTOR_MEDIASTACK_URL}
+      - INJECTOR_NEWSAPI_APIKEY=${INJECTOR_NEWSAPI_APIKEY}
+      - INJECTOR_NEWSAPI_URL=${INJECTOR_NEWSAPI_URL}
+      - INJECTOR_NEWSDATA_APIKEY=${INJECTOR_NEWSDATA_APIKEY}
+      - INJECTOR_NEWSDATA_URL=${INJECTOR_NEWSDATA_URL}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - REDIS_ENDPOINT=${REDIS_ENDPOINT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - KAFKA_SERVERS=${KAFKA_SERVERS}
+    depends_on:
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      postgres-injector:
+        condition: service_started
+
+  postgres-injector:
+    image: ${POSTGRES_IMAGE:-postgres:13}
+    container_name: postgres-injector
+    hostname: postgres-injector
+    environment:
+      - TZ=Europe/Madrid
+      - POSTGRES_DB=${INJECTOR_DB_NAME:-newsdb}
+      - POSTGRES_USER=${INJECTOR_DB_USER}
+      - POSTGRES_PASSWORD=${INJECTOR_DB_PASSWORD}
+    volumes:
+      - pginjector_data:/var/lib/postgresql/data
+
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.8
     container_name: zookeeper
@@ -16,17 +123,12 @@ services:
       - "zookeeper_data:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-    networks:
-      - kafka_network
 
   kafka:
     image: docker.io/bitnami/kafka:3.3
     container_name: kafka
     hostname: kafka
     restart: always
-    ports:
-      - ${KAFKA_PORT:-9092}:${KAFKA_PORT:-9092}
-      - 9997:9997
     volumes:
       - "kafka_data:/bitnami"
     environment:
@@ -34,18 +136,16 @@ services:
       ALLOW_PLAINTEXT_LISTENER: yes
       KAFKA_CFG_LOG_RETENTION_HOURS: ${KAFKA_RETENTION_HOURS:-24}
       KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,CONNECTIONS_FROM_HOST://localhost:${KAFKA_PORT}
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:${KAFKA_PORT}
       KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONNECTIONS_FROM_HOST:PLAINTEXT
-      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONNECTIONS_FROM_HOST://:${KAFKA_PORT}
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:${KAFKA_PORT}
       KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 1
       KAFKA_CFG_NUM_PARTITIONS: ${KAFKA_DEFAULT_PARTITIONS:-3}
       KAFKA_CFG_MESSAGE_MAX_BYTES: 10485880
     depends_on:
       - zookeeper
-    networks:
-      - kafka_network
     healthcheck:
-      test: ["CMD","kafka-topics.sh","--list","--bootstrap-server","host.docker.internal:19092"]
+      test: ["CMD","kafka-topics.sh","--list","--bootstrap-server","kafka:9092"]
       interval: 10s
       timeout: 50s
       retries: 5
@@ -63,18 +163,17 @@ services:
         condition: service_healthy
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:${KAFKA_PORT}
       KAFKA_CLUSTERS_0_METRICS_PORT: 9997
       LOGGING_LEVEL_ROOT: error
-    networks:
-      - kafka_network
+      LOGGING_LEVEL_COM_PROVECTUS: error
 
   minio:
-    container_name: Minio
+    container_name: minio
+    hostname: minio
     command: server /data --console-address ":9001"
     image: quay.io/minio/minio:latest
     ports:
-      - '9000:9000'
       - '9001:9001'
     volumes:
       - minion_data:/data
@@ -94,7 +193,7 @@ services:
     hostname: mongodb-executor
     restart: always
     ports:
-      - 27017:27017
+      - "27017:27017"
     environment:
       - TZ=Europe/Madrid
       - MONGO_INITDB_ROOT_USERNAME=${MONGODB_INIT_ROOT_USER:-root}
@@ -115,7 +214,7 @@ services:
     image: mongo-express
     restart: unless-stopped
     ports:
-      - 9081:8081
+      - "9081:8081"
     depends_on:
       mongodb-executor:
         condition: service_started
@@ -126,34 +225,6 @@ services:
     environment:
       ME_CONFIG_MONGODB_URL: mongodb://${MONGODB_INIT_ROOT_USER}:${MONGODB_INIT_ROOT_PASSWD}@mongodb-executor:27017/
 
-  postgres-injector:
-    image: ${POSTGRES_IMAGE:-postgres:13}
-    container_name: postgres-injector
-    hostname: postgres-injector
-    ports:
-      - ${INJECTOR_DB_PORT}:5432
-    environment:
-      - TZ=Europe/Madrid
-      - POSTGRES_DB=${INJECTOR_DB_NAME:-newsdb}
-      - POSTGRES_USER=${INJECTOR_DB_USER}
-      - POSTGRES_PASSWORD=${INJECTOR_DB_PASSWORD}
-    volumes:
-      - pginjector_data:/var/lib/postgresql/data
-
-  postgres-api:
-    image: ${POSTGRES_IMAGE:-postgres:13}
-    container_name: postgres-api
-    hostname: postgres-api
-    ports:
-      - ${API_DB_PORT:-5434}:5432
-    environment:
-      - TZ=Europe/Madrid
-      - POSTGRES_DB=${API_DB_NAME:-apidb}
-      - POSTGRES_PASSWORD=${API_DB_PASSWORD}
-      - POSTGRES_USER=${API_DB_USER}
-    volumes:
-      - pgapi_data:/var/lib/postgresql/data
-
   pgadmin:
     container_name: pgadmin4
     image: dpage/pgadmin4:6
@@ -162,6 +233,8 @@ services:
       PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 50
       PGADMIN_CONFIG_FILE_LOG_LEVEL: 50
       PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_DEFAULT_EMAIL: admin@mail.com
+      PGADMIN_DEFAULT_PASSWORD: password
     depends_on:
       - postgres-injector
       - postgres-api
@@ -175,7 +248,7 @@ services:
     image: redis:7.0.7-alpine
     hostname: redis
     ports:
-      - 6379:6379
+      - "6379:6379"
     restart: always
     ulimits:
       memlock:
@@ -217,11 +290,11 @@ services:
       - postgres-keycloak
     restart: always
     ports:
-      - ${KEYCLOAK_HTTP_PORT:-8180}:8080
-      - ${KEYCLOAK_HTTPS_PORT:-8543}:8443
+      - ${KEYCLOAK_HTTP_PORT:-8180}:${KEYCLOAK_HTTP_PORT}
+      - ${KEYCLOAK_HTTPS_PORT:-8543}:${KEYCLOAK_HTTPS_PORT}
     volumes:
       - ./realm:/opt/keycloak/data/import
-    command: start-dev --import-realm
+    command: start-dev --import-realm --auto-build --http-enabled=true --hostname-strict-https=false --hostname-strict=false --proxy=edge
     environment:
       TZ: Europe/Madrid
       KC_HEALTH_ENABLED: true
@@ -237,27 +310,28 @@ services:
       KC_DB_POOL_INITIAL_SIZE: 1
       KC_DB_POOL_MIN_SIZE: 1
       KC_DB_POOL_MAX_SIZE: 5
+      KC_HTTP_PORT: ${KEYCLOAK_HTTP_PORT}
 
 volumes:
   minion_data:
-    name: env_minion_data
+    name: uat_minion_data
   mongoexecutor_data:
-    name: env_mongoexecutor_data
+    name: uat_mongoexecutor_data
   mongoexecutor_data_4:
-    name: env_mongoexecutor4_data
+    name: uat_mongoexecutor4_data
   pginjector_data:
-    name: env_pginjector_data
+    name: uat_pginjector_data
   pgapi_data:
-    name: env_pgapi_data
+    name: uat_pgapi_data
   pgadmin_data:
-    name: env_pgadmin_data
+    name: uat_pgadmin_data
   kafka_data:
-    name: env_kafka_data
+    name: uat_kafka_data
   zookeeper_data:
-    name: env_zookeeper_data
+    name: uat_zookeeper_data
   cache:
-    name: env_cache
+    name: uat_cache
   redisinsight_data:
-    name: env_redisinsight_data
+    name: uat_redisinsight_data
   postgres_keycloak_data:
-    name: env_postgres_keycloak_data
+    name: uat_postgres_keycloak_data

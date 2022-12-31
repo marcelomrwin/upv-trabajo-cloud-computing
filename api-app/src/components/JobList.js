@@ -12,6 +12,7 @@ import keycloak from "../Keycloak";
 import AuthorizedElement from "../security/AuthorizedElement";
 import {GiGearHammer} from "react-icons/gi";
 import {generateClientId} from "../helpers/generateId";
+
 const JobList = (props) => {
     const [items, setJobs] = useState([]);
     const [searchTitle, setSearchTitle] = useState("");
@@ -24,6 +25,8 @@ const JobList = (props) => {
     const pageSizes = [5, 10, 20];
 
     jobsRef.current = items;
+
+    const API_URL_BASE = window._env_.API_URL_BASE;
 
     const onChangeSearchTitle = (e) => {
         const searchTitle = e.target.value;
@@ -121,7 +124,7 @@ const JobList = (props) => {
             }
 
             // eslint-disable-next-line no-restricted-globals
-            var wsUrl = "ws://" + "localhost:8083" + "/ws/jobs/" + clientId;
+            var wsUrl = "ws://" + API_URL_BASE + "/ws/jobs/" + clientId;
             console.log('Connect to ' + wsUrl);
             socket = new WebSocket(wsUrl);
 
@@ -186,7 +189,6 @@ const JobList = (props) => {
                 Header: "Download",
                 accessor: "actions",
                 Cell: (props) => {
-                    const rowIdx = props.row.id;
                     return (
                         <div>
                             <AuthorizedElement roles={['USER', 'ADMIN']}>

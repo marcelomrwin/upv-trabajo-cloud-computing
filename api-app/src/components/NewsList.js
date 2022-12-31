@@ -27,6 +27,8 @@ const NewsList = (props) => {
 
     newsRef.current = items;
 
+    const API_URL_BASE = window._env_.API_URL_BASE;
+
     const onChangeSearchTitle = (e) => {
         const searchTitle = e.target.value;
         setSearchTitle(searchTitle);
@@ -110,7 +112,7 @@ const NewsList = (props) => {
                 Header: "",
                 accessor: "thumbnail",
                 Cell: (props) => {
-                    return <img src={'data:image/jpeg;base64,' + props.value}/>
+                    return <img src={'data:image/jpeg;base64,' + props.value} alt="thumbnail"/>
                 }
             },
             {
@@ -157,7 +159,7 @@ const NewsList = (props) => {
             }
 
             // eslint-disable-next-line no-restricted-globals
-            var wsUrl = "ws://" + "localhost:8083" + "/ws/hotnews/" + clientId;
+            var wsUrl = "ws://" + API_URL_BASE + "/ws/hotnews/" + clientId;
             console.log('Connect to ' + wsUrl);
             socket = new WebSocket(wsUrl);
 

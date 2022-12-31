@@ -69,6 +69,11 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
+https://react-icons.github.io/react-icons
+https://getbootstrap.com/docs/5.0/utilities/colors/
+https://getbootstrap.com/docs/5.0/utilities/sizing/
+https://getbootstrap.com/docs/5.0/utilities/spacing/
+
 
 ## Creation
 ```shell
@@ -80,4 +85,17 @@ npm install axios
 npm install react-router-dom
 npm install @mui/material @emotion/react @emotion/styled --force
 npm install react-bootstrap
+```
+
+## Replace .env with shared .env 
+```shell
+ln -s ../env/dev/.env $(pwd)/.env
+```
+
+
+## Create Docker images Multiarch
+```shell
+docker buildx create --name multiarch --use --bootstrap
+
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/api-app -f docker/Dockerfile.nginx .
 ```

@@ -559,60 +559,66 @@ const Dashboard = () => {
                             modern applications <br/>Offers identity provider services and supports authentication and
                             authorization functionality for the <b>GUI</b> and <b>API</b>.<br/>Uses OIDC and Oauth2 with
                             JWT.<br/>
-                            It has a Realm called <b>cc</b> with the following settings:<br/>
-                            <div className="ps-4">
-                                <strong>Clients:</strong>
-                                <li>api-app -> GUI Web Application</li>
-                                <li>api-backend -> Application API</li>
-                                <strong>Roles:</strong>
-                                <table className="table table-bordered table-secondary w-25">
-                                    <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Members</th>
-                                    </tr>
-                                    </thead>
-                                    <tr>
-                                        <td>ADMIN</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>MONITOR</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>USER</td>
-                                        <td>user1, user2</td>
-                                    </tr>
-                                </table>
-                                <strong>GROUPS:</strong>
-                                <table className="table table-bordered table-secondary w-25">
-                                    <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Members</th>
-                                    </tr>
-                                    </thead>
-                                    <tr>
-                                        <td>ADMIN</td>
-                                        <td>admin</td>
-                                    </tr>
-                                    <tr>
-                                        <td>DEVELOPERS</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>STUDENTS</td>
-                                        <td></td>
-                                    </tr>
-                                </table>
-                                <strong>Users:</strong>
-                                <li>admin</li>
-                                <li>user1</li>
-                                <li>user2</li>
-                                <li>usermonitor</li>
-                            </div>
+                            It has a Realm called <b>cc</b> with the following settings:
+                            <br/>
                         </p>
+                        <div className="ps-4">
+                            <strong>Clients:</strong>
+                            <li>api-app -> GUI Web Application</li>
+                            <li>api-backend -> Application API</li>
+                            <strong>Roles:</strong>
+                            <table className="table table-bordered table-secondary w-25">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Members</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>ADMIN</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>MONITOR</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>USER</td>
+                                    <td>user1, user2</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <strong>GROUPS:</strong>
+                            <table className="table table-bordered table-secondary w-25">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Members</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>ADMIN</td>
+                                    <td>admin</td>
+                                </tr>
+                                <tr>
+                                    <td>DEVELOPERS</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>STUDENTS</td>
+                                    <td></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <strong>Users:</strong>
+                            <li>admin</li>
+                            <li>user1</li>
+                            <li>user2</li>
+                            <li>usermonitor</li>
+                        </div>
+
                         <p><b>MinIO</b> <a href="https://min.io/">https://min.io/</a> <br/>High Performance Object
                             Storage. Used by the <b>Injector</b> to store the
                             news images and used by the <b>Executor</b> to retrieve the images via a public link.</p>
@@ -727,6 +733,13 @@ const Dashboard = () => {
                         <li>Implement handling for dead letter queue concepts and poisonous or hot potato messages. The
                             project, as it stands, just discards the message. In a real project, certainly the message
                             could not be discarded.
+                        </li>
+                        <li>
+                            Generating images on a machine with ARM architecture forced us to generate the image for
+                            multiple architectures, amd64 and arm64. This made the image extremely larger than we would
+                            have liked. One of the reasons was to use an image with python and Imagemagick. One way out
+                            would be to find an alternative to the Imagemagick utility which requires a lot of packages
+                            installed on the machine and makes the image grow too large.
                         </li>
 
                     </Accordion.Body>
