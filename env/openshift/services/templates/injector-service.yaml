@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:  
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.injector.name }}
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+  name: {{ .Values.services.injector.name }}
+spec:
+  type: {{ .Values.services.injector.type }}
+  ports:
+    - name: "http"
+      port: {{ .Values.services.injector.port }}
+      targetPort: {{ .Values.services.injector.port }}
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.injector.name }}  
+status:
+  loadBalancer: {}

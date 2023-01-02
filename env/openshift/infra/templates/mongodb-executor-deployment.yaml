@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: mongodb-executor    
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.openshift.io/runtime: mongodb
+    app.kubernetes.io/component: database
+  name: mongodb-executor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mongodb-executor
+  strategy:
+    type: Recreate
+  template:
+    metadata:      
+      labels:
+        app.kubernetes.io/name: mongodb-executor
+    spec:
+      containers:
+        - env:
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongodb_executor.name }}
+                  key: mongodb_initdb
+            - name: MONGO_INITDB_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongodb_executor.name }}
+                  key: mongodb_initdb_password
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongodb_executor.name }}
+                  key: mongodb_initdb_root_password
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongodb_executor.name }}
+                  key: mongodb_initdb_root_username
+            - name: MONGO_INITDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongodb_executor.name }}
+                  key: mongodb_initdb_username
+            - name: TZ
+              value: Europe/Madrid
+          image: {{ .Values.images.mongodb_executor.name}}:{{ .Values.images.mongodb_executor.tag }}
+          name: mongodb-executor
+          ports:
+            - containerPort: {{ .Values.services.mongodb_executor.port }}
+          resources: {}
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongoexecutor-data
+            - mountPath: /docker-entrypoint-initdb.d/init-mongo.sh
+              name: mongodb-executor-init
+              subPath: init-mongo.sh
+      hostname: mongodb-executor
+      restartPolicy: Always
+      volumes:
+        - name: mongoexecutor-data
+          persistentVolumeClaim:
+            claimName: mongodb-executor-data
+        - name: mongodb-executor-init
+          configMap:
+            name: mongodb-executor-config
+            defaultMode: 0744
+status: {}

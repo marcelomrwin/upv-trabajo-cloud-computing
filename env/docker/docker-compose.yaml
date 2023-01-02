@@ -1,8 +1,8 @@
 version: "3.9"
 
 networks:
-  kafka_network:
-    name: kafka_network
+  cc_network:
+    name: cc_network
 
 services:
 
@@ -24,6 +24,8 @@ services:
         condition: service_healthy
       api:
         condition: service_started
+    networks:
+      - cc_network
 
   api:
     image: marcelodsales/api
@@ -51,8 +53,8 @@ services:
         condition: service_healthy
       postgres-api:
         condition: service_started
-    links:
-      - keycloak:localhost
+    networks:
+      - cc_network
 
   postgres-api:
     image: ${POSTGRES_IMAGE:-postgres:13}
@@ -67,6 +69,8 @@ services:
       - POSTGRES_USER=${API_DB_USER}
     volumes:
       - pgapi_data:/var/lib/postgresql/data
+    networks:
+      - cc_network
 
   injector:
     image: marcelodsales/injector
@@ -103,6 +107,8 @@ services:
         condition: service_healthy
       postgres-injector:
         condition: service_started
+    networks:
+      - cc_network
 
   postgres-injector:
     image: ${POSTGRES_IMAGE:-postgres:13}
@@ -117,6 +123,8 @@ services:
       - POSTGRES_PASSWORD=${INJECTOR_DB_PASSWORD}
     volumes:
       - pginjector_data:/var/lib/postgresql/data
+    networks:
+      - cc_network
 
   executor:
     image: marcelodsales/executor
@@ -143,6 +151,8 @@ services:
         condition: service_healthy
       mongodb-executor:
         condition: service_started
+    networks:
+      - cc_network
 
   mongodb-executor:
     image: mongo:4.4
@@ -166,6 +176,8 @@ services:
         condition: service_started
       kafka:
         condition: service_healthy
+    networks:
+      - cc_network
 
   observer:
     image: marcelodsales/observer
@@ -184,6 +196,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    networks:
+      - cc_network
 
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.8
@@ -195,6 +209,8 @@ services:
       - "zookeeper_data:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - cc_network
 
   kafka:
     image: docker.io/bitnami/kafka:3.3
@@ -223,6 +239,8 @@ services:
       interval: 10s
       timeout: 50s
       retries: 5
+    networks:
+      - cc_network
 
   kafka-ui:
     container_name: kafka-ui
@@ -241,6 +259,8 @@ services:
       KAFKA_CLUSTERS_0_METRICS_PORT: 9997
       LOGGING_LEVEL_ROOT: error
       LOGGING_LEVEL_COM_PROVECTUS: error
+    networks:
+      - cc_network
 
   minio:
     container_name: minio
@@ -261,6 +281,8 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    networks:
+      - cc_network
 
   mongo-express:
     image: mongo-express
@@ -276,6 +298,8 @@ services:
         condition: service_healthy
     environment:
       ME_CONFIG_MONGODB_URL: mongodb://${MONGODB_INIT_ROOT_USER}:${MONGODB_INIT_ROOT_PASSWD}@mongodb-executor:27017/
+    networks:
+      - cc_network
 
   pgadmin:
     container_name: pgadmin4
@@ -294,6 +318,8 @@ services:
       - "9082:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - cc_network
 
   redis:
     container_name: redis
@@ -309,6 +335,8 @@ services:
     mem_swappiness: 0
     volumes:
       - cache:/data
+    networks:
+      - cc_network
 
   redisinsight:
     container_name: redisinsight
@@ -318,6 +346,8 @@ services:
       - 9085:8001
     volumes:
       - redisinsight_data:/db
+    networks:
+      - cc_network
 
 ## Keycloak
   postgres-keycloak:
@@ -333,6 +363,8 @@ services:
       - POSTGRES_DB=${KEYCLOAK_DB_NAME:-keycloak}
       - POSTGRES_USER=${KEYCLOAK_DB_USER:-keycloak}
       - POSTGRES_PASSWORD=${KEYCLOAK_DB_PASSWORD:-password}
+    networks:
+      - cc_network
 
   keycloak:
     image: quay.io/keycloak/keycloak:20.0
@@ -363,6 +395,8 @@ services:
       KC_DB_POOL_MIN_SIZE: 1
       KC_DB_POOL_MAX_SIZE: 5
       KC_HTTP_PORT: ${KEYCLOAK_HTTP_PORT}
+    networks:
+      - cc_network
 
 volumes:
   minion_data:

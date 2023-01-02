@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.postgres_api.name }}
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+  name: {{ .Values.services.postgres_api.name }}
+spec:
+  type: {{ .Values.services.postgres_api.type }}
+  ports:
+    - name: "sql"
+      port: {{ .Values.services.postgres_api.port }}
+      targetPort: {{ .Values.services.postgres_api.port }}
+      protocol: {{ .Values.services.postgres_api.protocol }}
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.postgres_api.name }}
+status:
+  loadBalancer: {}

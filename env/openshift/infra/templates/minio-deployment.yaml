@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:  
+  labels:
+    app.kubernetes.io/name: minio
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.openshift.io/runtime: minio
+    app.kubernetes.io/component: database
+  name: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:      
+      labels:
+        app.kubernetes.io/name: minio
+    spec:
+      containers:
+        - args:
+            - server
+            - /data
+            - --console-address
+            - :9001
+          env:
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.minio.name }}
+                  key: root_password
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.minio.name }}
+                  key: root_user
+          image: {{ .Values.images.minio.name}}:{{ .Values.images.minio.tag }}
+          name: minio
+          ports:
+            - containerPort: {{ .Values.services.minio.port }}
+            - containerPort: 9001
+          resources: {}
+          volumeMounts:
+            - mountPath: /data
+              name: minion-data
+      hostname: minio
+      restartPolicy: Always
+      volumes:
+        - name: minion-data
+          persistentVolumeClaim:
+            claimName: minion-data
+status: {}

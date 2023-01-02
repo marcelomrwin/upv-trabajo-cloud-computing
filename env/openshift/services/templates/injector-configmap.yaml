@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configmaps.injector.name }}
+  labels:
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+data:
+  kafka_servers: {{ .Values.services.kafka.name }}:{{ .Values.services.kafka.port }}    
+  redis_endpoint: redis://{{ .Values.services.redis.name }}:{{ .Values.services.redis.port}}
+  minio_endpoint: http://{{ .Values.services.minio.name }}:{{ .Values.services.minio.port }}  
+  injector_newsdata_url: {{ .Values.configmaps.injector.injector_newsdata_url}}
+  injector_newsapi_url: {{ .Values.configmaps.injector.injector_newsapi_url}}
+  injector_mediastack_url: {{ .Values.configmaps.injector.injector_mediastack_url}}
+  injector_http_port: "{{ .Values.services.injector.port }}"
+  injector_cron: "{{ .Values.configmaps.injector.injector_cron}}"
+  injector_endpoint: http://{{ .Values.services.injector.name }}:{{ .Values.services.injector.port }}

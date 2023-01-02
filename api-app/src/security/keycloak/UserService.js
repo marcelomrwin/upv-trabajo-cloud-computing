@@ -35,8 +35,8 @@ const initKeycloak = (onAuthenticatedCallback) => {
                     }else{
                         console.warn('Token not refreshed');
                     }
-                }).catch(()=>{
-                    console.error('Failed to refresh token');
+                }).catch((e)=>{
+                    console.error('Failed to refresh token\n'+JSON.stringify(e));
                 });
             },50000);
 

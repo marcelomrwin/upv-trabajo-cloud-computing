@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configmaps.api_app.name }}
+  labels:
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+data:  
+  port: "{{ .Values.configmaps.api_app.port}}"
+  keycloak_base_url: http://{{ .Values.services.keycloak.name }}:{{ .Values.services.keycloak.port }}
+  api_url_base: {{ .Values.services.api.name }}:{{ .Values.services.api.forwardPort }}
+  api_endpoint: http://{{ .Values.services.api.name }}:{{ .Values.services.api.forwardPort }}/api

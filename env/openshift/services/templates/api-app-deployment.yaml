@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:  
+  labels:
+    app.kubernetes.io/name: api-app
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.openshift.io/runtime: node
+    app.kubernetes.io/component: ui
+  name: api-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-app
+  template:
+    metadata:      
+      labels:
+        app.kubernetes.io/name: api-app
+    spec:
+      containers:
+        - env:
+            - name: API_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.api_app.name }}
+                  key: api_endpoint
+            - name: API_URL_BASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.api_app.name }}
+                  key: api_url_base
+            - name: KEYCLOAK_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.api_app.name }}
+                  key: keycloak_base_url
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.api_app.name }}
+                  key: port
+          image: {{ .Values.images.api_app.name}}:{{ .Values.images.api_app.tag }}
+          name: api-app
+          ports:
+            - containerPort: {{ .Values.services.api_app.port }}
+          resources: {}
+      hostname: api-app
+      restartPolicy: Always
+status: {}

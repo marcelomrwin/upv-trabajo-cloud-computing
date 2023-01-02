@@ -1,0 +1,8 @@
+apiVersion: v2
+name: ccproject-infra
+description: A Helm Chart for CC Project
+version: 0.0.1
+type: application
+appVersion: 0.0.1
+icon: https://www.upv.es/perfiles/pas-pdi/imagenes/marca_UPV_principal_color.svg
+

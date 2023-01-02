@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:  
+  labels:
+    app.kubernetes.io/name: observer
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.openshift.io/runtime: quarkus
+    app.kubernetes.io/component: microservice
+  name: observer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: observer  
+  template:
+    metadata:      
+      labels:
+        app.kubernetes.io/name: observer
+    spec:
+      containers:
+        - env:
+            - name: KAFKA_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.observer.name }}
+                  key: kafka_servers
+            - name: OBSERVER_METRICS_SCHEDULE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.observer.name }}
+                  key: observer_metrics_schedule
+            - name: REDIS_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.observer.name }}
+                  key: redis_endpoint            
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name}}
+                  key: password
+          image: {{ .Values.images.observer.name}}:{{ .Values.images.observer.tag }}
+          name: observer          
+          resources: {}
+      hostname: observer
+      restartPolicy: Always
+status: {}

@@ -32,8 +32,7 @@ const Dashboard = () => {
                     <Accordion.Header>Cloud Computing Homework - UPV</Accordion.Header>
                     <Accordion.Body className="text-start">
                         <p className="fw-bold">HomeWork prepared for the discipline of cloud computing implemented
-                            by:</p>
-                        <p>V2</p>
+                            by:</p>                        
                         <ul>
                             <li>Marcelo Daniel das Silva Sales</li>
                             <li>Giovanni Sabogal Cespedes</li>
