@@ -1,5 +1,5 @@
 apiVersion: v2
-name: ccproject
+name: ccproject-infra
 description: A Helm Chart for CC Project
 version: 0.0.1
 type: application

@@ -28,15 +28,6 @@ images:
   keycloak:
     name: quay.io/keycloak/keycloak
     tag: "20.0"
-  observer:
-    name: marcelodsales/observer
-    tag: latest
-  injector:
-    name: marcelodsales/injector
-    tag: latest
-  api:
-    name: marcelodsales/api
-    tag: latest
 
 # Services
 services:
@@ -82,20 +73,9 @@ services:
     protocol: TCP    
   keycloak:
     name: keycloak
-    type: LoadBalancer
-    port: 8080
-    protocol: TCP
-  injector:
-    name: injector
     type: ClusterIP
     port: 8080
-    protocol: TCP
-  api:
-    name: api
-    type: LoadBalancer
-    port: 8080
-    protocol: TCP
-  
+    protocol: TCP  
 
 # Secrets
 secrets:
@@ -138,17 +118,6 @@ secrets:
     name: keycloak-secret
     keycloak_admin: admin
     keycloak_admin_password: admin
-
-  injector:
-    name: injector-secret
-    injector_newsdata_apikey: pub_146789360c2a1420986503a543273fbf22306
-    injector_newsapi_apikey: 3911bdc960ab4abfb3efb9630ab25188
-    injector_mediastack_apikey: 5d1a42a53fbaedc4e46d62157bec1f16
-
-  api:
-    name: api-secret
-    api_keycloak_client_id: api-backend
-    api_keycloak_client_secret: jIjvenRCzr0x0ccV6WDjDbh22NBluhPf
     
 # ConfigMaps
 configmaps:
@@ -166,17 +135,8 @@ configmaps:
   keycloak:
     name: keycloak-realm-config
 
-  observer:
-    name: observer-config
-    observer_metrics_schedule: "30s"
-  
-  injector:
-    name: injector-config
-    injector_newsdata_url: https://newsdata.io/api/1
-    injector_newsapi_url: https://newsapi.org/v2
-    injector_mediastack_url: http://api.mediastack.com/v1
-    injector_cron: "0 * * * * ?"
-
-  api:
-    name: api-config
+ingress:
+  keycloak:
+    name: keycloak-ingress
+    host: keycloak    
     
