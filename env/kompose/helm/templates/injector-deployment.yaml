@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:  
+  labels:
+    app.kubernetes.io/name: injector
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.openshift.io/runtime: quarkus
+    app.kubernetes.io/component: microservice
+  name: injector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: injector  
+  template:
+    metadata:      
+      labels:
+        app.kubernetes.io/name: injector
+    spec:
+      containers:
+        - env:
+            - name: INJECTOR_CRON
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.injector.name }}
+                  key: injector_cron
+            - name: INJECTOR_DB_HOST
+              value: {{ .Values.services.postgres_injector.name}}
+            - name: INJECTOR_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgres_injector.name }}
+                  key: postgres_db
+            - name: INJECTOR_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgres_injector.name }}
+                  key: postgres_password
+            - name: INJECTOR_DB_PORT
+              value: "{{ .Values.services.postgres_injector.port}}"
+            - name: INJECTOR_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgres_injector.name}}
+                  key: postgres_user
+            - name: INJECTOR_HTTP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.injector.name }}
+                  key: injector_http_port
+            - name: INJECTOR_MEDIASTACK_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.injector.name}}
+                  key: injector_mediastack_apikey
+            - name: INJECTOR_MEDIASTACK_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.injector.name }}
+                  key: injector_mediastack_url
+            - name: INJECTOR_NEWSAPI_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.injector.name}}
+                  key: injector_newsapi_apikey
+            - name: INJECTOR_NEWSAPI_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.injector.name }}
+                  key: injector_newsapi_url
+            - name: INJECTOR_NEWSDATA_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.injector.name}}
+                  key: injector_newsdata_apikey
+            - name: INJECTOR_NEWSDATA_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.injector.name }}
+                  key: injector_newsdata_url
+            - name: KAFKA_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.injector.name }}
+                  key: kafka_servers
+            - name: MINIO_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.injector.name }}
+                  key: minio_endpoint
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.minio.name}}
+                  key: root_password
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.minio.name}}
+                  key: root_user
+            - name: REDIS_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.observer.name }}
+                  key: redis_endpoint
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name}}
+                  key: password
+            - name: TZ
+              value: Europe/Madrid
+          image: {{ .Values.images.injector.name}}:{{ .Values.images.injector.tag }}
+          name: injector
+          ports:
+            - containerPort: 8080
+          resources: {}
+      hostname: injector
+      restartPolicy: Always
+status: {}

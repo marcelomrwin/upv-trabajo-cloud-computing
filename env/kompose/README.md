@@ -29,3 +29,21 @@ helm list --namespace ccproject
 helm upgrade ccproject . --namespace ccproject
 helm delete ccproject --namespace ccproject
 ```
+
+### Kafka Tests
+```
+minikube service <service-name> --url
+kubectl port-forward service/kafka 9092 -n ccproject
+```
+
+### Minikube, creating a tunnel for all LoadBalancers (recommended for local tests)
+```
+minikube tunnel
+```
+
+### Troubleshootings
+
+When testing with minikube and need to connect from outside the cluster, add the following line to /etc/hosts:
+```shell
+127.0.0.1 kafka
+```

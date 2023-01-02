@@ -15,6 +15,6 @@ spec:
       targetPort: {{ .Values.services.kafka.port }}
       protocol: {{ .Values.services.kafka.protocol }}
   selector:
-    app.kubernetes.io/name: kafka
+    app.kubernetes.io/name: {{ .Values.services.kafka.name }}
 status:
   loadBalancer: {}

@@ -13,8 +13,8 @@ spec:
     - name: "2181"
       port: {{ .Values.services.zookeeper.port }}
       targetPort: {{ .Values.services.zookeeper.port }}
-      protocol: {{ .Values.services.zookeeper.protocol }}
+      protocol: {{ .Values.services.zookeeper.protocol }}      
   selector:
-    app.kubernetes.io/name: zookeeper
+    app.kubernetes.io/name: {{ .Values.services.zookeeper.name }}
 status:
   loadBalancer: {}

@@ -132,4 +132,12 @@ public class ApiResource {
         }
     }
 
+    @GET
+    @Path("/ping")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(description = "Check server OK")
+    public Response ping(){
+        return Response.ok("PING OK").build();
+    }
+
 }

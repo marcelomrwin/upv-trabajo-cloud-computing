@@ -48,7 +48,7 @@ public class NewsScheduleJob {
 
     int serviceClientIndex = 0;
 
-    @Scheduled(cron = "{cron.expr}")
+    @Scheduled(cron = "{cron.expr}",concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void cronJobGetNews() {
         log.info("Starting cronJobGetNews. Skip? {}", skipSchedule);
         if (!skipSchedule)

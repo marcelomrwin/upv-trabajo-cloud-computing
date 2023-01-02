@@ -27,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import static io.quarkus.scheduler.Scheduled.ConcurrentExecution.SKIP;
+
 @ApplicationScoped
 @Slf4j
 @Builder
@@ -70,7 +72,7 @@ public class ObserverService {
         log.debug("Registered Observer App " + startDate);
     }
 
-    @Scheduled(every = "{app.metric.window}")
+    @Scheduled(every = "{app.metric.window}", concurrentExecution = SKIP)
     public void scheduleReport() {
         log.debug("Generating Statistics Report Starts");
         try {

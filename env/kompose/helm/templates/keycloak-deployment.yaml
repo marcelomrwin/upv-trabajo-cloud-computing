@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:  
+  labels:
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.openshift.io/runtime: keycloak
+    app.kubernetes.io/component: iam
+  name: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak
+  strategy:
+    type: Recreate
+  template:
+    metadata:      
+      labels:
+        app.kubernetes.io/name: keycloak
+    spec:
+      initContainers:
+        - name: kc-wait-for-pg
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} ${POD_PORT}; do echo "Waiting for postgres..."; sleep 3; done;']
+          env:
+            - name: POD_NAME
+              value: {{ .Values.services.postgres_keycloak.name }}
+            - name: POD_PORT
+              value: "{{ .Values.services.postgres_keycloak.port }}"
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+      containers:
+        - args:
+            - start-dev
+            - --import-realm
+            - --auto-build
+            - --http-enabled=true
+            - --hostname-strict-https=false
+            - --hostname-strict=false
+            - --proxy=edge
+          env:
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgres_keycloak.name }}
+                  key: postgres_password
+            - name: KC_DB_POOL_INITIAL_SIZE
+              value: "1"
+            - name: KC_DB_POOL_MAX_SIZE
+              value: "5"
+            - name: KC_DB_POOL_MIN_SIZE
+              value: "1"
+            - name: KC_DB_URL
+              value: jdbc:postgresql://{{ .Values.services.postgres_keycloak.name }}:{{ .Values.services.postgres_keycloak.port }}/{{ .Values.secrets.postgres_keycloak.postgres_db}}
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgres_keycloak.name}}
+                  key: postgres_user
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_HTTP_PORT
+              value: "{{ .Values.services.keycloak.port }}"
+            - name: KC_LOG
+              value: console
+            - name: KC_LOG_LEVEL
+              value: INFO,org.keycloak.transaction:warn,org.keycloak.services.scheduled:warn,org.hibernate:info,org.infinispan.protostream:info
+            - name: KC_METRICS_ENABLED
+              value: "true"
+            - name: KEYCLOAK_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.keycloak.name}}
+                  key: keycloak_admin
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.keycloak.name}}
+                  key: keycloak_admin_password
+            - name: TZ
+              value: Europe/Madrid
+          image: {{ .Values.images.keycloak.name}}:{{ .Values.images.keycloak.tag }}
+          name: keycloak
+          ports:
+            - containerPort: {{ .Values.services.keycloak.port }}
+          resources: {}
+          volumeMounts:
+            - mountPath: /opt/keycloak/data/import
+              name: keycloak-realm-import
+      hostname: keycloak
+      restartPolicy: Always
+      volumes:
+        - name: keycloak-realm-import
+          configMap:
+            name: {{ .Values.configmaps.keycloak.name }}
+            defaultMode: 0744
+status: {}

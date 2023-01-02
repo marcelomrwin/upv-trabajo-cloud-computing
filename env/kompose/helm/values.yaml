@@ -3,48 +3,60 @@
 images:
   postgres_injector:
     name: postgres
-    tag: 13
+    tag: "13"
   postgres_keycloak:
     name: postgres
-    tag: 13
+    tag: "13"
   postgres_api:
     name: postgres
-    tag: 13
+    tag: "13"
   mongodb_executor:
     name: mongo
-    tag: 4.4
+    tag: "4.4"
   redis:
     name: redis
-    tag: 7.0.7-alpine
+    tag: "7.0.7-alpine"
   minio:
     name: quay.io/minio/minio
     tag: latest
   zookeeper:
     name: docker.io/bitnami/zookeeper
-    tag: 3.8
+    tag: "3.8"
   kafka:
     name: docker.io/bitnami/kafka
-    tag: 3.3
+    tag: "3.3"
+  keycloak:
+    name: quay.io/keycloak/keycloak
+    tag: "20.0"
+  observer:
+    name: marcelodsales/observer
+    tag: latest
+  injector:
+    name: marcelodsales/injector
+    tag: latest
+  api:
+    name: marcelodsales/api
+    tag: latest
 
 # Services
 services:
   postgres_injector:
-    name: postgres_injector
+    name: postgres-injector
     type: ClusterIP
     port: 5432
     protocol: TCP
   postgres_keycloak:
-    name: postgres_keycloak
+    name: postgres-keycloak
     type: ClusterIP
     port: 5432
     protocol: TCP
   postgres_api:
-    name: postgres_api
+    name: postgres-api
     type: ClusterIP
     port: 5432
     protocol: TCP
   mongodb_executor:
-    name: mongodb_executor
+    name: mongodb-executor
     type: ClusterIP
     port: 27017
     protocol: TCP
@@ -62,12 +74,28 @@ services:
     name: zookeeper
     type: ClusterIP
     port: 2181
-    protocol: TCP
+    protocol: TCP    
   kafka:
     name: kafka
     type: ClusterIP
     port: 9092
+    protocol: TCP    
+  keycloak:
+    name: keycloak
+    type: LoadBalancer
+    port: 8080
     protocol: TCP
+  injector:
+    name: injector
+    type: ClusterIP
+    port: 8080
+    protocol: TCP
+  api:
+    name: api
+    type: LoadBalancer
+    port: 8080
+    protocol: TCP
+  
 
 # Secrets
 secrets:
@@ -105,6 +133,22 @@ secrets:
     name: minio-secret
     root_user: admin
     root_password: password
+  
+  keycloak:
+    name: keycloak-secret
+    keycloak_admin: admin
+    keycloak_admin_password: admin
+
+  injector:
+    name: injector-secret
+    injector_newsdata_apikey: pub_146789360c2a1420986503a543273fbf22306
+    injector_newsapi_apikey: 3911bdc960ab4abfb3efb9630ab25188
+    injector_mediastack_apikey: 5d1a42a53fbaedc4e46d62157bec1f16
+
+  api:
+    name: api-secret
+    api_keycloak_client_id: api-backend
+    api_keycloak_client_secret: jIjvenRCzr0x0ccV6WDjDbh22NBluhPf
     
 # ConfigMaps
 configmaps:
@@ -113,12 +157,26 @@ configmaps:
     allow_plaintext_listener: yes
     kafka_cfg_advertised_listeners: PLAINTEXT://kafka:9092
     kafka_cfg_auto_create_topics_enable: true
-    kafka_cfg_default_replication_factor: 1
+    kafka_cfg_default_replication_factor: "1"
     kafka_cfg_listeners: PLAINTEXT://:9092
-    kafka_cfg_log_retention_hours: 24
-    kafka_cfg_message_max_bytes: 10485880
-    kafka_cfg_num_partitions: 3
-    
+    kafka_cfg_log_retention_hours: "24"
+    kafka_cfg_message_max_bytes: "10485880"
+    kafka_cfg_num_partitions: "3"
+
   keycloak:
     name: keycloak-realm-config
 
+  observer:
+    name: observer-config
+    observer_metrics_schedule: "30s"
+  
+  injector:
+    name: injector-config
+    injector_newsdata_url: https://newsdata.io/api/1
+    injector_newsapi_url: https://newsapi.org/v2
+    injector_mediastack_url: http://api.mediastack.com/v1
+    injector_cron: "0 * * * * ?"
+
+  api:
+    name: api-config
+    

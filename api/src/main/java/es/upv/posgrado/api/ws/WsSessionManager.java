@@ -103,7 +103,7 @@ public class WsSessionManager {
         broadcastJobStatistics(message);
     }
 
-    @Scheduled(every = "30s")
+    @Scheduled(every = "30s",concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void ping() {
         hotNewsSessions.keySet().forEach(k -> {
             Session session = hotNewsSessions.get(k);
