@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configmaps.kafka.name }}
+  labels:
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+data:  
+  allow_plaintext_listener: "{{ .Values.configmaps.kafka.allow_plaintext_listener }}"
+  kafka_cfg_advertised_listeners: {{ .Values.configmaps.kafka.kafka_cfg_advertised_listeners }}
+  kafka_cfg_auto_create_topics_enable: "{{ .Values.configmaps.kafka.kafka_cfg_auto_create_topics_enable }}"
+  kafka_cfg_default_replication_factor: "{{ .Values.configmaps.kafka.kafka_cfg_default_replication_factor }}"
+  kafka_cfg_listeners: {{ .Values.configmaps.kafka.kafka_cfg_listeners }}
+  kafka_cfg_log_retention_hours: "{{ .Values.configmaps.kafka.kafka_cfg_log_retention_hours }}"
+  kafka_cfg_message_max_bytes: "{{ .Values.configmaps.kafka.kafka_cfg_message_max_bytes }}"
+  kafka_cfg_num_partitions: "{{ .Values.configmaps.kafka.kafka_cfg_num_partitions }}"

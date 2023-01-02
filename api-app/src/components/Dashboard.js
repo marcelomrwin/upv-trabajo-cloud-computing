@@ -659,34 +659,65 @@ const Dashboard = () => {
                 <Accordion.Item eventKey="5">
                     <Accordion.Header><FaTools/>&nbsp; Management Tools - Only for Development</Accordion.Header>
                     <Accordion.Body className="text-start">
-                        <li><b>Docker compose</b> <a
+                        <ul className="list-group">
+                        <li className="list-group-item d-flex justify-content-between align-items-start">
+                            
+                        <div class="ms-2 me-auto">
+      <div class="fw-bold">Docker compose</div>
+      <a
                             href="https://docs.docker.com/compose/">https://docs.docker.com/compose/</a><br/>&emsp;&emsp;Starts
                             all the necessary infrastructure to run the application in a local environment
+    </div>                            
                         </li>
-                        <li><b>pgAdmin</b> <a
+                        <li className="list-group-item d-flex justify-content-between align-items-start">
+                            
+                        <div class="ms-2 me-auto">
+      <div class="fw-bold">pgAdmin</div>
+      <a
                             href="https://www.pgadmin.org/">https://www.pgadmin.org/</a><br/>&emsp;&emsp;Web GUI client
                             for
                             Postgres. Used to connect to Postgres databases
+    </div>
+                            
                         </li>
-                        <li><b>Kafka-ui</b> <a
+                        <li className="list-group-item d-flex justify-content-between align-items-start">
+                            
+                        <div class="ms-2 me-auto">
+      <div class="fw-bold">Kafka-ui</div>
+      <a
                             href="https://github.com/provectus/kafka-ui">https://github.com/provectus/kafka-ui</a><br/>&emsp;&emsp;Web
                             GUI client for Kafka
+    </div>
                         </li>
-                        <li>
-                            <b>Mongo-express</b> <a
+                        <li className="list-group-item d-flex justify-content-between align-items-start">
+
+                        <div class="ms-2 me-auto">
+      <div class="fw-bold">Mongo-express</div>
+      <a
                             href="https://github.com/mongo-express/mongo-express">https://github.com/mongo-express/mongo-express</a><br/>&emsp;&emsp;Web
                             GUI client for MongoDB
+    </div>
                         </li>
-                        <li>
-                            <b>RedisInsight</b> <a
+                        <li className="list-group-item d-flex justify-content-between align-items-start">
+
+                        <div class="ms-2 me-auto">
+      <div class="fw-bold">RedisInsight</div>
+      <a
                             href="https://redis.io/docs/stack/insight/">https://redis.io/docs/stack/insight/</a><br/>&emsp;&emsp;
                             GUI client for Redis
+    </div>
+
                         </li>
-                        <li>
-                            <b>MinIO Console</b> <a
+                        <li className="list-group-item d-flex justify-content-between align-items-start">
+
+                        <div class="ms-2 me-auto">
+      <div class="fw-bold">MinIO Console</div>
+      <a
                             href="https://min.io/docs/minio/linux/administration/minio-console.html">https://min.io/docs/minio/linux/administration/minio-console.html</a><br/>&emsp;&emsp;
                             Web GUI client for MinIO
+    </div>    
                         </li>
+                        </ul>
                     </Accordion.Body>
                 </Accordion.Item>
 
@@ -697,62 +728,68 @@ const Dashboard = () => {
                             However, many requirements and improvements were left out of scope for time and effort.
                             Below we list some interesting items that can be better studied and or better work for
                             future versions of the work developed.</p>
-                        <li>Work out a method to renew MinIO links after expiration</li>
-                        <li>The solution works with event-driven architecture managed by Kafka. Being a small project it
+                            <ul className="list-group">
+                        <li className="list-group-item">Work out a method to renew MinIO links after expiration</li>
+                        <li className="list-group-item">The solution works with event-driven architecture managed by Kafka. Being a small project it
                             is considered acceptable to share structure of common objects to facilitate communication. A
                             more elegant alternative would be to use schema registration and a standard such as <a
                                 href="https://avro.apache.org/">Avro Schemas</a></li>
-                        <li>Restructure projects with packages and classes that adhere more to the hexagonal
+                        <li className="list-group-item">Restructure projects with packages and classes that adhere more to the hexagonal
                             architecture model.
                         </li>
-                        <li>Centralize the rules more in the domain model. Convert the project to a model more adherent
+                        <li className="list-group-item">Centralize the rules more in the domain model. Convert the project to a model more adherent
                             to Domain Driven Design
                         </li>
-                        <li>Completely eliminate dependency on the injector executor by implementing a mechanism for
+                        <li className="list-group-item">Completely eliminate dependency on the injector executor by implementing a mechanism for
                             monitoring news generated by the injector and ensuring that they are always in the cache,
                             thus avoiding the executor having to call the injector service as a last resort
                         </li>
-                        <li>Implement tighter distributed transaction control with the <a
+                        <li className="list-group-item">Implement tighter distributed transaction control with the <a
                             href="https://microservices.io/patterns/data/saga.html">SAGA</a> pattern.
                         </li>
-                        <li>Injector - Insert method to receive REST or Notification message to arbitrarily execute
+                        <li className="list-group-item">Injector - Insert method to receive REST or Notification message to arbitrarily execute
                             schedule
                         </li>
-                        <li>Observer - during report generation, based on the metrics obtained, it is possible to
+                        <li className="list-group-item">Observer - during report generation, based on the metrics obtained, it is possible to
                             trigger a service or even invoke the platform to take actions, such as autoscaling or
                             increasing partitions in kafka.
                         </li>
-                        <li>Secrets and settings are basically obtained through environment variables. It is possible to
+                        <li className="list-group-item">Secrets and settings are basically obtained through environment variables. It is possible to
                             insert a password vault in the solution and receive the secrets through this vault.
                         </li>
-                        <li>Service to generate news in an arbitrary way, without the need to use the injector</li>
-                        <li>Produce metrics on request fulfillment during a load or stress test with <a
+                        <li className="list-group-item">Service to generate news in an arbitrary way, without the need to use the injector</li>
+                        <li className="list-group-item">Produce metrics on request fulfillment during a load or stress test with <a
                             href="https://jmeter.apache.org/">JMeter</a> or <a href="https://gatling.io/">Gatling</a>
                         </li>
-                        <li>Making a <a href="https://www.postman.com/">Postman</a> collection available for testing
+                        <li className="list-group-item">Making a <a href="https://www.postman.com/">Postman</a> collection available for testing
                         </li>
-                        <li>Implement handling for dead letter queue concepts and poisonous or hot potato messages. The
+                        <li className="list-group-item">Implement handling for dead letter queue concepts and poisonous or hot potato messages. The
                             project, as it stands, just discards the message. In a real project, certainly the message
                             could not be discarded.
                         </li>
-                        <li>
+                        <li className="list-group-item">
                             Generating images on a machine with ARM architecture forced us to generate the image for
                             multiple architectures, amd64 and arm64. This made the image extremely larger than we would
                             have liked. One of the reasons was to use an image with python and Imagemagick. One way out
                             would be to find an alternative to the Imagemagick utility which requires a lot of packages
                             installed on the machine and makes the image grow too large.
                         </li>
-                        <li>
+                        <li className="list-group-item">
                             Optimize the handling of messages received with websocket. The current behavior performs a
                             new database search, but each event brings the updated object with it. Use this event to
                             fill the event table without having to return to the server.
                         </li>
-                        <li>Use HTTPS on external connections</li>
-                        <li>Authentication and Authorization in Kafka</li>
-                        <li>We also identified a bug in the keycloak library for javascript regarding react. In some
+                        <li className="list-group-item">Use HTTPS on external connections</li>
+                        <li className="list-group-item">Authentication and Authorization in Kafka</li>
+                        <li className="list-group-item">We also identified a bug in the keycloak library for javascript regarding react. In some
                             cases the logout function is called inadvertently and some React components are not
                             notified. Open a bug or fix the crash and submit the Pull Request.
                         </li>
+                        <li className="list-group-item">Make the worker adhere to the serverless model</li>
+                        <li className="list-group-item">Define resources limits when deploying in Kubernetes like environments</li>
+                        <li className="list-group-item">When working with Helm it would be interesting to read variables from an .env file and feed a template from Values.yaml. This way we wouldn't have to maintain two configuration files.</li>
+                        <li className="list-group-item">All event communication can evolve into a Change Data Capture (CDC) model using Strimzi for example. This way we would eliminate the need to control the outbox pattern and the CDC flow itself would be in charge of publishing the messages in the Kafka cluster.</li>
+                        </ul>                        
                     </Accordion.Body>
                 </Accordion.Item>
             </Accordion>

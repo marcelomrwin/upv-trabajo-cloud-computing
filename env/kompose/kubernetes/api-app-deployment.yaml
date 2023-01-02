@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   annotations:
     kompose.cmd: kompose --file ../docker-compose.yaml convert
+    kompose.service.expose: "true"
     kompose.service.type: LoadBalancer
     kompose.version: 1.27.0 (HEAD)
   creationTimestamp: null
@@ -19,6 +20,7 @@ spec:
     metadata:
       annotations:
         kompose.cmd: kompose --file ../docker-compose.yaml convert
+        kompose.service.expose: "true"
         kompose.service.type: LoadBalancer
         kompose.version: 1.27.0 (HEAD)
       creationTimestamp: null

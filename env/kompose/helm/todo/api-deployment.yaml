@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose --file ../docker-compose.yaml convert
+    kompose.cmd: kompose --file ../docker-compose.yaml convert -c -o .
     kompose.service.expose: "true"
     kompose.service.type: LoadBalancer
     kompose.version: 1.27.0 (HEAD)
@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose --file ../docker-compose.yaml convert
+        kompose.cmd: kompose --file ../docker-compose.yaml convert -c -o .
         kompose.service.expose: "true"
         kompose.service.type: LoadBalancer
         kompose.version: 1.27.0 (HEAD)

@@ -3,11 +3,13 @@ kind: Service
 metadata:
   annotations:
     kompose.cmd: kompose --file ../docker-compose.yaml convert
+    kompose.service.expose: "true"
+    kompose.service.type: LoadBalancer
     kompose.version: 1.27.0 (HEAD)
   creationTimestamp: null
   labels:
-    io.kompose.service: injector
-  name: injector
+    io.kompose.service: injector-tcp
+  name: injector-tcp
 spec:
   ports:
     - name: "8080"
@@ -15,5 +17,6 @@ spec:
       targetPort: 8080
   selector:
     io.kompose.service: injector
+  type: LoadBalancer
 status:
   loadBalancer: {}

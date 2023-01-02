@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:  
+  labels:
+    app.kubernetes.io/name: postgres-api
+    app.kubernetes.io/part-of: {{ .Chart.Name }}    
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.openshift.io/runtime: postgres
+    app.kubernetes.io/component: database
+  name: postgres-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgres-api
+  strategy:
+    type: Recreate
+  template:
+    metadata:      
+      labels:
+        app.kubernetes.io/name: postgres-api
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgres_api.name }}
+                  key: postgres_db
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgres_api.name }}
+                  key: postgres_password
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgres_api.name}}
+                  key: postgres_user
+            - name: TZ
+              value: Europe/Madrid
+          image: {{ .Values.images.postgres_api.name}}:{{ .Values.images.postgres_api.tag }}
+          name: postgres-api
+          ports:
+            - containerPort: {{ .Values.services.postgres_api.port }}
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: pgapi-data
+      hostname: postgres-api
+      restartPolicy: Always
+      volumes:
+        - name: pgapi-data
+          persistentVolumeClaim:
+            claimName: pgapi-data
+status: {}

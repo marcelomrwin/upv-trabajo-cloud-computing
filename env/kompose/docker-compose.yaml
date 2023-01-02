@@ -19,6 +19,7 @@ services:
       - api
     labels:
       kompose.service.type: LoadBalancer
+      kompose.service.expose: "true"
 
   api:
     image: marcelodsales/api
@@ -45,6 +46,7 @@ services:
       - postgres-api
     labels:
       kompose.service.type: LoadBalancer
+      kompose.service.expose: "true"
 
   postgres-api:
     image: ${POSTGRES_IMAGE:-postgres:13}
@@ -92,6 +94,9 @@ services:
       - zookeeper
       - kafka
       - postgres-injector
+    labels:
+      kompose.service.type: LoadBalancer
+      kompose.service.expose: "true"
 
   postgres-injector:
     image: ${POSTGRES_IMAGE:-postgres:13}

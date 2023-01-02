@@ -1,0 +1,124 @@
+
+# Images
+images:
+  postgres_injector:
+    name: postgres
+    tag: 13
+  postgres_keycloak:
+    name: postgres
+    tag: 13
+  postgres_api:
+    name: postgres
+    tag: 13
+  mongodb_executor:
+    name: mongo
+    tag: 4.4
+  redis:
+    name: redis
+    tag: 7.0.7-alpine
+  minio:
+    name: quay.io/minio/minio
+    tag: latest
+  zookeeper:
+    name: docker.io/bitnami/zookeeper
+    tag: 3.8
+  kafka:
+    name: docker.io/bitnami/kafka
+    tag: 3.3
+
+# Services
+services:
+  postgres_injector:
+    name: postgres_injector
+    type: ClusterIP
+    port: 5432
+    protocol: TCP
+  postgres_keycloak:
+    name: postgres_keycloak
+    type: ClusterIP
+    port: 5432
+    protocol: TCP
+  postgres_api:
+    name: postgres_api
+    type: ClusterIP
+    port: 5432
+    protocol: TCP
+  mongodb_executor:
+    name: mongodb_executor
+    type: ClusterIP
+    port: 27017
+    protocol: TCP
+  redis:
+    name: redis
+    type: ClusterIP
+    port: 6379
+    protocol: TCP
+  minio:
+    name: minio
+    type: ClusterIP
+    port: 9000
+    protocol: TCP
+  zookeeper:
+    name: zookeeper
+    type: ClusterIP
+    port: 2181
+    protocol: TCP
+  kafka:
+    name: kafka
+    type: ClusterIP
+    port: 9092
+    protocol: TCP
+
+# Secrets
+secrets:
+  postgres_injector:
+    name: postgres-injector-secret
+    postgres_db: newsdb
+    postgres_password: postgres
+    postgres_user: postgres
+
+  postgres_keycloak:
+    name: postgres-keycloak-secret
+    postgres_db: keycloak
+    postgres_password: password
+    postgres_user: keycloak
+  
+  postgres_api:
+    name: postgres-api-secret
+    postgres_db: apidb
+    postgres_password: postgres
+    postgres_user: postgres
+
+  mongodb_executor:
+    name: mongodb-executor
+    mongodb_initdb: executordb
+    mongodb_initdb_password: mongopasswd
+    mongodb_initdb_root_password: root
+    mongodb_initdb_root_username: root
+    mongodb_initdb_username: mongoadmin
+  
+  redis:
+    name: redis-secret
+    password: password
+
+  minio:
+    name: minio-secret
+    root_user: admin
+    root_password: password
+    
+# ConfigMaps
+configmaps:
+  kafka:
+    name: kafka-config
+    allow_plaintext_listener: yes
+    kafka_cfg_advertised_listeners: PLAINTEXT://kafka:9092
+    kafka_cfg_auto_create_topics_enable: true
+    kafka_cfg_default_replication_factor: 1
+    kafka_cfg_listeners: PLAINTEXT://:9092
+    kafka_cfg_log_retention_hours: 24
+    kafka_cfg_message_max_bytes: 10485880
+    kafka_cfg_num_partitions: 3
+    
+  keycloak:
+    name: keycloak-realm-config
+
