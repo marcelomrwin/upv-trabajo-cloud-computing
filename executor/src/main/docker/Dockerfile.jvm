@@ -7,18 +7,18 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/executor-jvm .
+# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/injector-jvm .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/executor-jvm
+# docker run -i --rm -p 8080:8080 quarkus/injector-jvm
 #
 # If you want to include the debug port into your docker image
 # you will have to expose the debug port (default 5005) like this :  EXPOSE 8080 5005
 #
 # Then run the container using :
 #
-# docker run -i --rm -p 8080:8080 quarkus/executor-jvm
+# docker run -i --rm -p 8080:8080 quarkus/injector-jvm
 #
 # This image uses the `run-java.sh` script to run the application.
 # This scripts computes the command line to execute your Java application, and
@@ -82,10 +82,24 @@ ENV LANGUAGE='en_US:en'
 USER root
 RUN microdnf install -y python3 dnf
 RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-RUN microdnf update
-RUN microdnf install glibc
+RUN microdnf update -y
+RUN microdnf install glibc -y
+RUN dnf clean all
+RUN dnf makecache
 RUN dnf update -y
-RUN dnf install -y ImageMagick-libs ImageMagick --skip-broken
+RUN dnf repository-packages epel list
+
+RUN dnf install -y http://repo.okay.com.mx/centos/8/x86_64/release/jasper-libs-2.0.14-4.el8.x86_64.rpm
+RUN rpm -ivh https://vault.centos.org/centos/8/AppStream/x86_64/os/Packages/LibRaw-0.19.5-3.el8.x86_64.rpm
+
+RUN microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y ImageMagick-libs \
+            && microdnf clean all \
+            && rpm -q ImageMagick-libs
+
+RUN microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y ImageMagick \
+            && microdnf clean all \
+            && rpm -q ImageMagick
+
 RUN dnf clean all && microdnf clean all
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
@@ -96,6 +110,6 @@ COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
 USER 185
+
 ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
-

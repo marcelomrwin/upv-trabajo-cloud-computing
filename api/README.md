@@ -10,6 +10,7 @@ mvn clean -am -Ddebug=false quarkus:dev
 
 ## Generate docker image
 
+### ARCH64
 ```shell
 ./mvnw package -DskipTests -DskipScan -U
 
@@ -19,6 +20,11 @@ docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marc
 ### Outdated
 ```
 docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/api -f src/main/docker/Dockerfile.jvm .
+```
+
+### AMD64
+```
+docker build --tag quay.io/marcelosales/api:0.0.5 -f src/main/docker/Dockerfile.jvm .
 ```
 
 ## Execution through docker compose

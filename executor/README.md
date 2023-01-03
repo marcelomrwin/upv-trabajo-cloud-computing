@@ -67,7 +67,10 @@ ln -s ../env/dev/.env $(pwd)/.env
 ./mvnw clean quarkus:dev -Ddebug=false
 ```
 
+
 ## Generate docker image
+
+### AARCH64
 ```shell
 ./mvnw package -DskipTests -DskipScan -U
 docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marcelosales/executor -f src/main/docker/Dockerfile.jvm .
@@ -76,4 +79,9 @@ docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marc
 ### Deprecated
 ```
 docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/executor -f src/main/docker/Dockerfile.jvm .
+```
+
+### AMD64
+```
+docker build --tag quay.io/marcelosales/executor:0.0.5 -f src/main/docker/Dockerfile.jvm .
 ```

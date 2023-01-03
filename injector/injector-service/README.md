@@ -70,3 +70,8 @@ docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marc
 ```
 docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/injector -f src/main/docker/Dockerfile.jvm .
 ```
+
+### AMD64
+```
+docker build --tag quay.io/marcelosales/injector:0.0.5 -f src/main/docker/Dockerfile.jvm .
+```
