@@ -12,6 +12,12 @@ mvn clean -am -Ddebug=false quarkus:dev
 
 ```shell
 ./mvnw package -DskipTests -DskipScan -U
+
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marcelosales/api -f src/main/docker/Dockerfile.jvm .
+```
+
+### Outdated
+```
 docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/api -f src/main/docker/Dockerfile.jvm .
 ```
 

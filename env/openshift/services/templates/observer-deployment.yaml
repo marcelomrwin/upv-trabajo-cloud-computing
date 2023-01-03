@@ -44,6 +44,8 @@ spec:
           image: {{ .Values.images.observer.name}}:{{ .Values.images.observer.tag }}
           name: observer          
           resources: {}
+      imagePullSecrets:
+        - name: marcelosales-default-pull-secret
       hostname: observer
       restartPolicy: Always
 status: {}

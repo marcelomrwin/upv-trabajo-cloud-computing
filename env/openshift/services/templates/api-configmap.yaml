@@ -9,4 +9,4 @@ metadata:
 data:
   kafka_servers: {{ .Values.services.kafka.name }}:{{ .Values.services.kafka.port }}    
   redis_endpoint: redis://{{ .Values.services.redis.name }}:{{ .Values.services.redis.port}}  
-  keycloak_endpoint: http://{{ .Values.services.keycloak.name }}:{{ .Values.services.keycloak.port }}/realms/cc
+  keycloak_endpoint: http://{{ .Values.services.keycloak.name }}-{{ .Values.project.name }}.{{ .Values.project.domain }}/realms/cc

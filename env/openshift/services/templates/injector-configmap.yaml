@@ -16,3 +16,4 @@ data:
   injector_http_port: "{{ .Values.services.injector.port }}"
   injector_cron: "{{ .Values.configmaps.injector.injector_cron}}"
   injector_endpoint: http://{{ .Values.services.injector.name }}:{{ .Values.services.injector.port }}
+  injector_skip_schedule: "{{ .Values.configmaps.injector.injector_skip_schedule }}"

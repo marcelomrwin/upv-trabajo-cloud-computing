@@ -1,21 +1,24 @@
+project:
+  name: ccproject
+  domain: apps.ocp4.masales.cloud
 
 # Images
 images:  
   observer:
-    name: marcelodsales/observer
+    name: quay.io/marcelosales/observer
     tag: latest
   injector:
-    name: marcelodsales/injector
-    tag: latest
+    name: quay.io/marcelosales/injector
+    tag: 0.0.2
   api:
-    name: marcelodsales/api
+    name: quay.io/marcelosales/api
     tag: latest
   api_app:
-    name: marcelodsales/api-app
+    name: quay.io/marcelosales/api-app
     tag: latest
   executor:
-    name: marcelodsales/executor
-    tag: latest    
+    name: quay.io/marcelosales/executor
+    tag: latest
 
 # Services
 services:  
@@ -28,8 +31,7 @@ services:
     name: api
     type: ClusterIP
     port: 8080
-    protocol: TCP
-    forwardPort: 8083
+    protocol: TCP    
   api_app:
     name: api-app
     type: ClusterIP
@@ -65,6 +67,7 @@ configmaps:
     injector_newsapi_url: https://newsapi.org/v2
     injector_mediastack_url: http://api.mediastack.com/v1
     injector_cron: "0 * * * * ?"
+    injector_skip_schedule: false
 
   api:
     name: api-config
@@ -76,10 +79,10 @@ configmaps:
   executor:
     name: executor-config
 
-ingress:
+route:
   api:
-    name: api-ingress
-    host: api.127.0.0.1.nip.io    
+    name: api-route
+    host: http://api-ccproject.apps.ocp4.masales.cloud/    
   api_app:
-    name: api-app-ingress
-    host: api-app.127.0.0.1.nip.io    
+    name: api-app-route
+    host: http://api-app-ccproject.apps.ocp4.masales.cloud/

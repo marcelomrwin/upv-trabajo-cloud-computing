@@ -6,11 +6,12 @@ metadata:
     app.kubernetes.io/part-of: {{ .Chart.Name }}    
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/managed-by: helm
-    app.openshift.io/runtime: postgres
+    app.openshift.io/runtime: postgresql
     app.kubernetes.io/component: database
   name: postgres-keycloak
 spec:
   replicas: 1
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: postgres-keycloak
@@ -23,17 +24,17 @@ spec:
     spec:
       containers:
         - env:
-            - name: POSTGRES_DB
+            - name: POSTGRESQL_DATABASE
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.postgres_keycloak.name }}
                   key: postgres_db
-            - name: POSTGRES_PASSWORD
+            - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.postgres_keycloak.name }}
                   key: postgres_password
-            - name: POSTGRES_USER
+            - name: POSTGRESQL_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.postgres_keycloak.name}}
@@ -44,9 +45,33 @@ spec:
           name: postgres-keycloak
           ports:
             - containerPort: {{ .Values.services.postgres_keycloak.port }}
-          resources: {}
+          securityContext:
+            capabilities: {}
+            privileged: false
+          resources:
+            limits:
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command:
+                - /usr/libexec/check-container
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - /usr/libexec/check-container
+                - '--live'
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
           volumeMounts:
-            - mountPath: /var/lib/postgresql/data
+            - mountPath: /var/lib/pgsql/data
               name: postgres-keycloak-data
       hostname: postgres-keycloak
       restartPolicy: Always

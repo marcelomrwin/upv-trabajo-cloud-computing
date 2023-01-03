@@ -1,11 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata:  
+metadata:
+  annotations:
+    app.openshift.io/connects-to: {{ .Values.services.kafka.name }}  
   labels:
     app.kubernetes.io/name: executor
     app.kubernetes.io/part-of: {{ .Chart.Name }}    
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
-    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/managed-by: Helm
     app.openshift.io/runtime: quarkus
     app.kubernetes.io/component: microservice
   name: executor
@@ -81,6 +83,9 @@ spec:
           image: {{ .Values.images.executor.name}}:{{ .Values.images.executor.tag }}
           name: executor          
           resources: {}
+      imagePullSecrets:
+        - name: marcelosales-default-pull-secret
+      serviceAccountName: anyuid-sa
       hostname: executor
       restartPolicy: Always
 status: {}

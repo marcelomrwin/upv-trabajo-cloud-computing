@@ -1,12 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata:  
+metadata:
+  annotations:
+    app.openshift.io/connects-to: {{ .Values.services.api.name }}
   labels:
     app.kubernetes.io/name: api-app
     app.kubernetes.io/part-of: {{ .Chart.Name }}    
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
-    app.kubernetes.io/managed-by: helm
-    app.openshift.io/runtime: node
+    app.kubernetes.io/managed-by: Helm
+    app.openshift.io/runtime: nodejs
     app.kubernetes.io/component: ui
   name: api-app
 spec:
@@ -46,6 +48,9 @@ spec:
           ports:
             - containerPort: {{ .Values.services.api_app.port }}
           resources: {}
+      imagePullSecrets:
+        - name: marcelosales-default-pull-secret
+      serviceAccountName: anyuid-sa
       hostname: api-app
       restartPolicy: Always
 status: {}

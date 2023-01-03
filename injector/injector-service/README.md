@@ -63,5 +63,10 @@ ln -s ../../env/dev/.env $(pwd)/.env
 ## Generate docker image
 ```shell
 ./mvnw package -DskipTests -DskipScan -U
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marcelosales/injector -f src/main/docker/Dockerfile.jvm .
+```
+
+### Deprecated
+```
 docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/injector -f src/main/docker/Dockerfile.jvm .
 ```

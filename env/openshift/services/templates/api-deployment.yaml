@@ -1,11 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    app.openshift.io/connects-to: {{ .Values.services.postgres_api.name }}
+    app.openshift.io/connects-to: {{ .Values.services.kafka.name }}
   labels:
     app.kubernetes.io/name: api
     app.kubernetes.io/part-of: {{ .Chart.Name }}    
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
-    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/managed-by: Helm
     app.openshift.io/runtime: quarkus
     app.kubernetes.io/component: microservice
   name: api
@@ -69,6 +72,8 @@ spec:
           ports:
             - containerPort: {{ .Values.services.api.port }}
           resources: {}
+      imagePullSecrets:
+        - name: marcelosales-default-pull-secret
       hostname: api
       restartPolicy: Always
 status: {}

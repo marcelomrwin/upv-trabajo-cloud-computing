@@ -7,10 +7,13 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/managed-by: helm
   name: pgapi-data
+  finalizers:
+    - kubernetes.io/pvc-protection
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Mi
-status: {}
+      storage: 1Gi
+  storageClassName: managed-nfs-storage
+  volumeMode: Filesystem

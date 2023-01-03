@@ -336,3 +336,21 @@ After these steps the applications will be available in the URLs:
 * GUI - http://api-app:8091
 * API - http://api:8083
 * Keycloak - http://keycloak:8180
+
+## Deploy in Openshift
+* Openshift client
+
+```
+oc login --token=<OPENSHIFT_TOKEN> --server=<SERVER_URL>
+```
+
+**Create the project and deploy Helm**
+
+```
+oc new-project ccproject
+oc create sa anyuid-sa --namespace ccproject
+oc adm policy add-scc-to-user anyuid -z anyuid-sa --namespace ccproject
+cd infra
+helm install ccproject-infra .
+helm install ccproject-services . --values ./values.yaml --values ../infra/values.yaml
+```

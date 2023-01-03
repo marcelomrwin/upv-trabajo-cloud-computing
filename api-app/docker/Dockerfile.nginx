@@ -35,6 +35,7 @@ RUN apk add --no-cache bash
 
 # Make our shell script executable
 RUN chmod +x env.sh
+RUN chown -R 775 /usr/share/nginx
 
 # Start Nginx server
 CMD ["/bin/bash", "-c", "/usr/share/nginx/html/env.sh && nginx -g \"daemon off;\""]

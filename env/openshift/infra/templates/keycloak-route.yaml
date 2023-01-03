@@ -1,0 +1,17 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:  
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: {{ .Values.route.keycloak.name }}
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+  name: {{ .Values.route.keycloak.name }}  
+spec:
+  host: {{ .Values.services.keycloak.name }}-{{ .Values.project.name }}.{{ .Values.project.domain }}
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: {{ .Values.services.keycloak.name }}
+    weight: 100

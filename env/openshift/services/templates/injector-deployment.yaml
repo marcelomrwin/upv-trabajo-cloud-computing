@@ -1,11 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata:  
+metadata:
+  annotations:
+    app.openshift.io/connects-to: {{ .Values.services.kafka.name }}
   labels:
     app.kubernetes.io/name: injector
     app.kubernetes.io/part-of: {{ .Chart.Name }}    
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
-    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/managed-by: Helm
     app.openshift.io/runtime: quarkus
     app.kubernetes.io/component: microservice
   name: injector
@@ -45,6 +47,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secrets.postgres_injector.name}}
                   key: postgres_user
+            - name: INJECTOR_SKIP_SCHEDULE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmaps.injector.name }}
+                  key: injector_skip_schedule
             - name: INJECTOR_HTTP_PORT
               valueFrom:
                 configMapKeyRef:
@@ -117,6 +124,9 @@ spec:
           ports:
             - containerPort: 8080
           resources: {}
+      imagePullSecrets:
+        - name: marcelosales-default-pull-secret
+      serviceAccountName: anyuid-sa
       hostname: injector
       restartPolicy: Always
 status: {}
