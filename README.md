@@ -8,7 +8,7 @@ Clone this repo
 ```
 git clone https://github.com/marcelomrwin/ccproject
 ```
-===
+---
 
 ### Test with development environment
 * IDE [Intellij, Vscode, Eclipse]
@@ -64,7 +64,7 @@ cd api-app
 nmp start
 ```
 
-===
+---
 
 ## Run in local environment with Docker Compose
 
@@ -182,7 +182,7 @@ API_KEYCLOAK_CLIENT_SECRET=<CONFIDENTIAL>
 * RedisInsight http://localhost:9085/
 * Keycloak http://localhost:8180/ (admin/admin)
 
-===
+---
 
 ## Running the whole project locally using docker-compose
 
@@ -292,7 +292,7 @@ API_KEYCLOAK_CLIENT_SECRET=<CONFIDENTIAL>
 * RedisInsight http://localhost:9085/
 * Keycloak http://localhost:8180/ (admin/admin)
 
-===
+---
 
 ## Run in local environment with Minikube
 * Minikube
@@ -611,7 +611,7 @@ After these steps the applications will be available in the URLs:
 * API - http://api:8083
 * Keycloak - http://keycloak:8180
 
-===
+---
 
 ## Deploy in Openshift
 * Openshift client
