@@ -70,20 +70,23 @@ ln -s ../env/dev/.env $(pwd)/.env
 
 ## Generate docker image
 
-### AARCH64
+### Compile the project
 ```shell
 ./mvnw package -DskipTests -DskipScan -U
+```
 
+### For Local Dev
+```
+docker build --tag marcelodsales/executor -f src/main/docker/Dockerfile.jvm .
+```
+
+### AARCH64
+```shell
 docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marcelosales/executor:0.0.6 -f src/main/docker/Dockerfile.jvm .
 ```
 **For Openshift:**
 ```
 docker buildx build --push --platform linux/amd64 --tag quay.io/marcelosales/executor:0.0.6 -f src/main/docker/Dockerfile.jvm .
-```
-
-### Deprecated
-```
-docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/executor -f src/main/docker/Dockerfile.jvm .
 ```
 
 ### AMD64
