@@ -36,3 +36,14 @@ docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsale
 ```shell
 docker build --tag quay.io/marcelosales/observer:0.0.5 -f src/main/docker/Dockerfile.jvm .
 ```
+
+## Generate Native Executable
+```
+./mvnw package -Pnative -Dquarkus.native.container-build=true -Dquarkus.container-image.build=true
+docker build --tag marcelodsales/observer:native -f src/main/docker/Dockerfile.native .
+```
+
+### Run Local
+```
+docker run --rm -e REDIS_ENDPOINT=redis://host.docker.internal:6379 -e KAFKA_SERVERS=host.docker.internal:19092 marcelodsales/observer:native
+```

@@ -49,10 +49,11 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-kafka-streams</artifactId>
-    </dependency>
+    </dependency>    
     <dependency>
-      <groupId>org.eclipse.jgit</groupId>
-      <artifactId>org.eclipse.jgit</artifactId>
+      <groupId>io.quarkiverse.jgit</groupId>
+      <artifactId>quarkus-jgit</artifactId>
+      <version>2.3.1</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

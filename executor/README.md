@@ -1,4 +1,4 @@
-# executor Project
+# Executor Project
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
@@ -92,4 +92,19 @@ docker buildx build --push --platform linux/amd64 --tag quay.io/marcelosales/exe
 ### AMD64
 ```
 docker build --tag quay.io/marcelosales/executor:0.0.5 -f src/main/docker/Dockerfile.jvm .
+```
+
+## Generate Native Executable
+```
+./mvnw clean -am package -Pnative -DskipTests -DskipScan -U -Dquarkus.native.container-build=true -Dquarkus.container-image.build=true
+
+docker build --tag marcelodsales/executor:native -f src/main/docker/Dockerfile.native .
+
+docker run --rm \
+-e REDIS_ENDPOINT=redis://host.docker.internal:6379 \
+-e KAFKA_SERVERS=host.docker.internal:19092 \
+-e MONGODB_URL=mongodb://host.docker.internal:27017 \
+-e MINIO_ENDPOINT=http://host.docker.internal:9000 \
+-e INJECTOR_ENDPOINT=http://host.docker.internal:8082 \
+marcelodsales/executor:native
 ```

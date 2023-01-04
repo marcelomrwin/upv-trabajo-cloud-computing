@@ -4,12 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import es.upv.posgrado.common.model.Job;
 import es.upv.posgrado.common.model.JobStatus;
 import es.upv.posgrado.common.model.NewsDTO;
-import es.upv.posgrado.common.model.NewsStatus;
 import es.upv.posgrado.executor.service.ExecutorService;
 
 import es.upv.posgrado.executor.service.NewsService;
 import io.smallrye.reactive.messaging.annotations.Blocking;
-import io.vertx.mutiny.core.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;

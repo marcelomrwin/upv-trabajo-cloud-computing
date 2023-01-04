@@ -253,6 +253,7 @@ const Dashboard = () => {
                                     <li>It has protected services that require authentication and authorization
                                         token in JWT format
                                     </li>
+                                    <li>Application was tested using unit tests and integration tests with JUnit, Mockito and Rest Assured</li>
                                     <li>Integrated with Keycloak</li>
                                     <li>
                                         Provides websocket connection channel for web GUI
@@ -362,6 +363,7 @@ const Dashboard = () => {
                                         news</h5>
                                     <hr/>
                                     <li>Developed with <a href="https://quarkus.io/">Quarkus</a> 2.14</li>
+                                    <li>Application was tested using unit tests and integration tests with JUnit, Mockito and Rest Assured</li>
                                     <li>The "main" program was written in python 3</li>
                                     <li>Has integration with Kafka for:
                                         <ul>
@@ -433,6 +435,7 @@ const Dashboard = () => {
                                         Executor</h5>
                                     <hr/>
                                     <li>Developed with <a href="https://quarkus.io/">Quarkus</a> 2.14</li>
+                                    <li>Application was tested using unit tests and integration tests with JUnit, Mockito and Rest Assured</li>
                                     <li>It has a customizable scheduling service to get new news.</li>
                                     <li>It uses fault tolerance techniques to get news on every run. With automatic news
                                         source rotation
@@ -527,6 +530,7 @@ const Dashboard = () => {
                                         performed</h5>
                                     <hr/>
                                     <li>Developed with <a href="https://quarkus.io/">Quarkus</a> 2.14</li>
+                                    <li>Application was tested using unit tests and integration tests with JUnit, Mockito and Rest Assured</li>
                                     <li>It has a customizable scheduling service to generate reports</li>
                                     <li>Integrates with Kafka to
                                         <ul>

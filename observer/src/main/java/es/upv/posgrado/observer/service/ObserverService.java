@@ -40,8 +40,11 @@ public class ObserverService {
     ManagedExecutor managedExecutor;
     @Inject
     CacheClient cacheClient;
+    @Builder.Default
     private AtomicLong totalJobRequest = new AtomicLong();
+    @Builder.Default
     private AtomicLong totalJobResponse = new AtomicLong();
+    @Builder.Default
     private AtomicLong totalTimeExpend = new AtomicLong();
     private LocalDateTime startDate;
     private LocalDateTime olderJob;
@@ -50,7 +53,7 @@ public class ObserverService {
     private ChronoUnit timeFrameUnit = ChronoUnit.MINUTES;
 
     @Inject
-    private KafkaProducer kafkaProducer;
+    KafkaProducer kafkaProducer;
 
     public void updateTimeFrameDuration(@NotNull @Min(1) Long newDuration) {
         this.timeFrameDuration = newDuration;

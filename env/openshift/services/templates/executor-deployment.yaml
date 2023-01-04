@@ -81,7 +81,8 @@ spec:
             - name: TZ
               value: Europe/Madrid
           image: {{ .Values.images.executor.name}}:{{ .Values.images.executor.tag }}
-          name: executor          
+          imagePuPullPolicy: Always
+          name: executor
           resources: {}
       imagePullSecrets:
         - name: marcelosales-default-pull-secret
