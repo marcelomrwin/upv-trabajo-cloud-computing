@@ -66,6 +66,11 @@ ln -s ../../env/dev/.env $(pwd)/.env
 docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marcelosales/injector -f src/main/docker/Dockerfile.jvm .
 ```
 
+**For Openshift**
+```
+docker buildx build --push --platform linux/amd64 --tag quay.io/marcelosales/injector:0.0.6 -f src/main/docker/Dockerfile.jvm .
+```
+
 ### Deprecated
 ```
 docker buildx build --push --platform linux/amd64,linux/arm64 --tag marcelodsales/injector -f src/main/docker/Dockerfile.jvm .

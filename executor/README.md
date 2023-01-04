@@ -73,7 +73,12 @@ ln -s ../env/dev/.env $(pwd)/.env
 ### AARCH64
 ```shell
 ./mvnw package -DskipTests -DskipScan -U
-docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marcelosales/executor -f src/main/docker/Dockerfile.jvm .
+
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marcelosales/executor:0.0.6 -f src/main/docker/Dockerfile.jvm .
+```
+**For Openshift:**
+```
+docker buildx build --push --platform linux/amd64 --tag quay.io/marcelosales/executor:0.0.6 -f src/main/docker/Dockerfile.jvm .
 ```
 
 ### Deprecated

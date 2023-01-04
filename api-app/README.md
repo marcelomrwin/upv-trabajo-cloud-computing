@@ -104,7 +104,7 @@ docker build --tag marcelodsales/api-app -f docker/Dockerfile.fast .
 ```shell
 docker buildx create --name multiarch --use --bootstrap
 
-docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marcelosales/api-app -f docker/Dockerfile.nginx .
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marcelosales/api-app:0.0.6 -f docker/Dockerfile.nginx .
 ```
 
 ### Deprecated

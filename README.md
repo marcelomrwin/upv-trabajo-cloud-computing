@@ -8,6 +8,7 @@ Clone this repo
 ```
 git clone https://github.com/marcelomrwin/ccproject
 ```
+===
 
 ### Test with development environment
 * IDE [Intellij, Vscode, Eclipse]
@@ -16,11 +17,284 @@ git clone https://github.com/marcelomrwin/ccproject
 * Container CLI [Docker, Podman]
 * REST Client [Postman, Insomnia ]
 
+**Compile all projects**
+```
+mvn clean install -DskipTests -DskipScan -U
+```
+
+#### Injector
+```
+cd injector/injector-service
+./mvnw clean quarkus:dev -Ddebug=false
+```
+
+#### Executor
+```
+cd executor
+./mvnw clean quarkus:dev -Ddebug=false
+```
+
+#### Observer
+```
+cd observer
+./mvnw clean quarkus:dev -Ddebug=false
+```
+
+#### Api
+```
+cd api
+./mvnw clean quarkus:dev -Ddebug=false
+```
+
+#### Api-App
+
+Api-app needs a .env file like below:
+
+```
+PORT=8091
+KEYCLOAK_BASE_URL=http://localhost:8180
+API_URL_BASE=localhost:8083
+API_ENDPOINT=http://localhost:8083/api
+```
+
+Then run:
+
+```
+cd api-app
+nmp start
+```
+
+===
+
+## Run in local environment with Docker Compose
+
+Inside the /env folder are settings for files needed to provision the entire infrastructure and also to test the system using the docker images published in the quay.io repository.
+
+If you need to generate images for each project, within the README.md file of each project there are instructions on how to generate the docker image.
+
+The docker-compose.yaml file is configured to use images with the latest tag, this is perfectly configurable by editing the file and changing it to the desired tag.
+
+### Provisioning infrastructure with docker compose
+```
+cd env/dev
+```shell
+docker-compose down && docker-compose pull && docker-compose --env-file .env up
+```
+
+The .env file used to provide the local infrastructure has a configuration similar to the one below:
+
+```properties
+# Infrastructure configuration
+# ----------------------------#
+
+# Postgres
+POSTGRES_IMAGE=postgres:13
+
+# Redis
+REDIS_ENDPOINT=redis://localhost:6379
+REDIS_PASSWORD=password
+
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+# Kafka
+KAFKA_PORT=19092
+KAFKA_SERVERS=localhost:${KAFKA_PORT}
+KAFKA_RETENTION_HOURS=24
+KAFKA_DEFAULT_PARTITIONS=3
+KAFKA_ZOOKEEPER_URL=zookeeper:2181
+
+# MinIO
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=password
+MINIO_ENDPOINT=http://localhost:9000
 
 
+# PgAdmin
+PGADMIN_DEFAULT_EMAIL=admin@admin.com
+PGADMIN_DEFAULT_PASSWORD=password
+
+# Keycloak
+KEYCLOAK_BASE_URL=http://localhost:8180
+KEYCLOAK_ENDPOINT=${KEYCLOAK_BASE_URL}/realms/cc
+KEYCLOAK_DB_PORT=5432
+KEYCLOAK_DB_NAME=keycloak
+KEYCLOAK_DB_USER=keycloak
+KEYCLOAK_DB_PASSWORD=password
+KEYCLOAK_DB_HOST=postgres-keycloak
+KEYCLOAK_HTTP_PORT=8180
+KEYCLOAK_HTTPS_PORT=8543
+KEYCLOAK_ADMIN_USER=admin
+KEYCLOAK_ADMIN_PASSWORD=admin
+
+# Services Configuration
+# ----------------------#
+
+# Executor
+MONGODB_DB_USER=mongoadmin
+MONGODB_DB_PASSWORD=mongopasswd
+MONGODB_URL=mongodb://localhost:27017
+MONGODB_DB_NAME=executordb
+MONGODB_INIT_ROOT_USER=root
+MONGODB_INIT_ROOT_PASSWD=root
+
+# Injector
+INJECTOR_CRON=0 * * * * ?
+INJECTOR_DB_USER=postgres
+INJECTOR_DB_PASSWORD=postgres
+INJECTOR_DB_HOST=localhost
+INJECTOR_DB_PORT=5433
+INJECTOR_DB_NAME=newsdb
+INJECTOR_HTTP_PORT=8082
+INJECTOR_MEDIASTACK_APIKEY=<CONFIDENTIAL>
+INJECTOR_MEDIASTACK_URL=http://api.mediastack.com/v1
+INJECTOR_NEWSAPI_APIKEY=<CONFIDENTIAL>
+INJECTOR_NEWSAPI_URL=https://newsapi.org/v2
+INJECTOR_NEWSDATA_APIKEY=<CONFIDENTIAL>
+INJECTOR_NEWSDATA_URL=https://newsdata.io/api/1
+INJECTOR_ENDPOINT=http://localhost:${INJECTOR_HTTP_PORT}
+
+# Observer
+OBSERVER_METRICS_SCHEDULE=30s
+
+# API
+API_HTTP_PORT=8083
+API_ENDPOINT=http://localhost:${API_HTTP_PORT}
+API_DB_HOST=localhost
+API_DB_USER=postgres
+API_DB_PASSWORD=postgres
+API_DB_PORT=5434
+API_DB_NAME=apidb
+API_KEYCLOAK_CLIENT_ID=api-backend
+API_KEYCLOAK_CLIENT_SECRET=<CONFIDENTIAL>
+```
+
+### Services
+* GUI - http://localhost:8091
+* API - http://localhost:8083
+* Keycloak - http://localhost:8180
+
+### Support tools
+* Kafka UI http://localhost:9080/
+* MinIO Console http://localhost:9001/ (admin/password)
+* MongoDB Express http://localhost:9081/ (admin/pass)
+* PgAdmin http://localhost:9082/
+* RedisInsight http://localhost:9085/
+* Keycloak http://localhost:8180/ (admin/admin)
+
+===
+
+## Running the whole project locally using docker-compose
+
+```shell
+cd env/docker
+docker-compose down && docker-compose pull && docker-compose --env-file .env up
+```
+To run it, you need an .env file like the one below:
+
+```properties
+# Infrastructure configuration
+# ----------------------------#
+
+# Postgres
+POSTGRES_IMAGE=postgres:13
+
+# Redis
+REDIS_ENDPOINT=redis://redis:6379
+REDIS_PASSWORD=password
+
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+# Kafka
+KAFKA_PORT=9092
+KAFKA_SERVERS=kafka:${KAFKA_PORT}
+KAFKA_RETENTION_HOURS=24
+KAFKA_DEFAULT_PARTITIONS=3
+KAFKA_ZOOKEEPER_URL=zookeeper:2181
+
+# MinIO
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=password
+MINIO_ENDPOINT=http://minio:9000
 
 
-### Run in local environment with Minikube
+# PgAdmin
+PGADMIN_DEFAULT_EMAIL=admin@admin.com
+PGADMIN_DEFAULT_PASSWORD=password
+
+# Keycloak
+KEYCLOAK_ENDPOINT=http://keycloak:8180/realms/cc
+KEYCLOAK_DB_PORT=5432
+KEYCLOAK_DB_NAME=keycloak
+KEYCLOAK_DB_USER=keycloak
+KEYCLOAK_DB_PASSWORD=password
+KEYCLOAK_DB_HOST=postgres-keycloak
+KEYCLOAK_HTTP_PORT=8180
+KEYCLOAK_HTTPS_PORT=8543
+KEYCLOAK_BASE_URL=http://keycloak:8180
+KEYCLOAK_ADMIN_USER=admin
+KEYCLOAK_ADMIN_PASSWORD=admin
+
+# Services Configuration
+# ----------------------#
+
+# Executor
+MONGODB_DB_USER=mongoadmin
+MONGODB_DB_PASSWORD=mongopasswd
+MONGODB_URL=mongodb://mongodb-executor:27017
+MONGODB_DB_NAME=executordb
+MONGODB_INIT_ROOT_USER=root
+MONGODB_INIT_ROOT_PASSWD=root
+
+# Injector
+INJECTOR_CRON=0 * * * * ?
+INJECTOR_DB_USER=postgres
+INJECTOR_DB_PASSWORD=postgres
+INJECTOR_DB_HOST=postgres-injector
+INJECTOR_DB_PORT=5432
+INJECTOR_DB_NAME=newsdb
+INJECTOR_HTTP_PORT=8082
+INJECTOR_MEDIASTACK_APIKEY=<CONFIDENTIAL>
+INJECTOR_MEDIASTACK_URL=http://api.mediastack.com/v1
+INJECTOR_NEWSAPI_APIKEY=<CONFIDENTIAL>
+INJECTOR_NEWSAPI_URL=https://newsapi.org/v2
+INJECTOR_NEWSDATA_APIKEY=<CONFIDENTIAL>
+INJECTOR_NEWSDATA_URL=https://newsdata.io/api/1
+INJECTOR_ENDPOINT=http://injector:8080
+
+# Observer
+OBSERVER_METRICS_SCHEDULE=30s
+
+# API
+API_HTTP_PORT=8083
+API_URL_BASE=localhost:${API_HTTP_PORT}
+API_ENDPOINT=http://${API_URL_BASE}
+API_DB_HOST=postgres-api
+API_DB_USER=postgres
+API_DB_PASSWORD=postgres
+API_DB_PORT=5432
+API_DB_NAME=apidb
+API_KEYCLOAK_CLIENT_ID=api-backend
+API_KEYCLOAK_CLIENT_SECRET=<CONFIDENTIAL>
+```
+
+### Services
+* GUI - http://localhost:8091
+* API - http://localhost:8083
+* Keycloak - http://localhost:8180
+
+### Support tools
+* Kafka UI http://localhost:9080/
+* MinIO Console http://localhost:9001/ (admin/password)
+* MongoDB Express http://localhost:9081/ (admin/pass)
+* PgAdmin http://localhost:9082/
+* RedisInsight http://localhost:9085/
+* Keycloak http://localhost:8180/ (admin/admin)
+
+===
+
+## Run in local environment with Minikube
 * Minikube
 * Kubernetes client
 * Helm
@@ -337,6 +611,8 @@ After these steps the applications will be available in the URLs:
 * API - http://api:8083
 * Keycloak - http://keycloak:8180
 
+===
+
 ## Deploy in Openshift
 * Openshift client
 
@@ -352,5 +628,14 @@ oc create sa anyuid-sa --namespace ccproject
 oc adm policy add-scc-to-user anyuid -z anyuid-sa --namespace ccproject
 cd infra
 helm install ccproject-infra .
+cd services
 helm install ccproject-services . --values ./values.yaml --values ../infra/values.yaml
+```
+
+**Updating Helm***
+```
+cd infra
+helm upgrade ccproject-infra .
+cd services
+helm upgrade ccproject-services . --values ./values.yaml --values ../infra/values.yaml
 ```

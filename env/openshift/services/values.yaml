@@ -6,19 +6,19 @@ project:
 images:  
   observer:
     name: quay.io/marcelosales/observer
-    tag: latest
+    tag: 0.0.6
   injector:
     name: quay.io/marcelosales/injector
-    tag: 0.0.2
+    tag: 0.0.6
   api:
     name: quay.io/marcelosales/api
-    tag: latest
+    tag: 0.0.7
   api_app:
     name: quay.io/marcelosales/api-app
-    tag: latest
+    tag: 0.0.6
   executor:
     name: quay.io/marcelosales/executor
-    tag: latest
+    tag: 0.0.6
 
 # Services
 services:  
