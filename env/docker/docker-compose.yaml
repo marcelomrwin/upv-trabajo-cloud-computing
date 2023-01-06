@@ -33,7 +33,7 @@ services:
     hostname: api
     restart: always
     ports:
-      - ${API_HTTP_PORT}:8080
+      - ${API_HTTP_PORT}:${API_HTTP_PORT}
     environment:
       - TZ=Europe/Madrid
       - API_HTTP_PORT=${API_HTTP_PORT}
@@ -400,24 +400,24 @@ services:
 
 volumes:
   minion_data:
-    name: uat_minion_data
+    name: docker_minion_data
   mongoexecutor_data:
-    name: uat_mongoexecutor_data
+    name: docker_mongoexecutor_data
   mongoexecutor_data_4:
-    name: uat_mongoexecutor4_data
+    name: docker_mongoexecutor4_data
   pginjector_data:
-    name: uat_pginjector_data
+    name: docker_pginjector_data
   pgapi_data:
-    name: uat_pgapi_data
+    name: docker_pgapi_data
   pgadmin_data:
-    name: uat_pgadmin_data
+    name: docker_pgadmin_data
   kafka_data:
-    name: uat_kafka_data
+    name: docker_kafka_data
   zookeeper_data:
-    name: uat_zookeeper_data
+    name: docker_zookeeper_data
   cache:
-    name: uat_cache
+    name: docker_cache
   redisinsight_data:
-    name: uat_redisinsight_data
+    name: docker_redisinsight_data
   postgres_keycloak_data:
-    name: uat_postgres_keycloak_data
+    name: docker_postgres_keycloak_data

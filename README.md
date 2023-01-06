@@ -292,6 +292,17 @@ API_KEYCLOAK_CLIENT_SECRET=<CONFIDENTIAL>
 * RedisInsight http://localhost:9085/
 * Keycloak http://localhost:8180/ (admin/admin)
 
+
+## Troubleshotting
+
+If services do not start normally, check local volumes. Sometimes docker compose does not provision the volumes and the services are stuck waiting for the volumes
+
+A possible solution is to remove the volumes and let compose recreate them again.
+
+```
+docker volume rm <volume name>
+```
+
 ---
 
 ## Run in local environment with Minikube

@@ -1,5 +1,13 @@
 ## Generate files
 
+### Generate from docker-compose (only skeleton)
+```
+kompose --file ../docker-compose.yaml convert -c -o .
+```
+
+*IMPORTANT*
+It's needed adjust some files
+
 ### Kubernetes
 ```shell
 cd kubernetes
