@@ -80,7 +80,7 @@ public class NewsScheduleJob {
                 switch (wae.getResponse().getStatus()) {
                     case 429:
                     case 426: {
-                        log.debug("Generating news from Qaurkus RSS Feed https://quarkus.io/feed.xml");
+                        log.debug("Generating news from Quarkus RSS Feed https://quarkus.io/feed.xml");
                         Set<NewsDTO> newsDTOSet = getNewsFromQuarkusFeed(); //contingence
                         processorService.saveNewsFromArticle(newsDTOSet);
                         break;

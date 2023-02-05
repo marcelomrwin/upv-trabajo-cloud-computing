@@ -5,6 +5,9 @@ import io.minio.ObjectWriteResponse;
 import io.minio.UploadObjectArgs;
 import io.minio.errors.*;
 import io.minio.http.Method;
+import io.minio.messages.Retention;
+import io.minio.messages.RetentionDurationDays;
+import io.minio.messages.RetentionMode;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -23,7 +26,8 @@ public class MinioClient {
 
     public ObjectWriteResponse uploadObject(String objectName,String objectPath) throws IOException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         ObjectWriteResponse uploadObject = minioClient.uploadObject(UploadObjectArgs.builder().bucket(newsBucket)
-                .object(objectName).filename(objectPath).build());
+                .object(objectName).filename(objectPath)
+                .build());
         return uploadObject;
     }
 

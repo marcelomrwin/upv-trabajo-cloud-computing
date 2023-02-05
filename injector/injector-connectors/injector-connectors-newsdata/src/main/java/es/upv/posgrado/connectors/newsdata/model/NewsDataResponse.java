@@ -1,5 +1,6 @@
 package es.upv.posgrado.connectors.newsdata.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,5 +13,6 @@ public class NewsDataResponse {
     public String status;
     public int totalResults;
     public List<NewsDataResult> results;
-    public int nextPage;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String nextPage;
 }

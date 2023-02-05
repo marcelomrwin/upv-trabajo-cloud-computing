@@ -48,6 +48,12 @@ public class NewsProcessorService {
 
     private void processNewEntity(NewsDTO newsDTO, News newsEntity) {
         String urlToImage = imageService.downloadArticleImage(newsDTO);
+
+        if (urlToImage == null) {
+            newsDTO.setUrlToImage("https://m.media-amazon.com/images/I/51lEaBcxm3L.png");
+            urlToImage = imageService.downloadArticleImage(newsDTO);
+        }
+
         if (urlToImage != null) {
             newsEntity.setUrlToImage(urlToImage);
             newsEntity.setThumbnail(newsDTO.getThumbnail());

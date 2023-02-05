@@ -1,7 +1,6 @@
 package es.upv.posgrado.injector.service;
 
 import es.upv.posgrado.client.shell.CommandExecutor;
-
 import es.upv.posgrado.common.model.NewsDTO;
 import es.upv.posgrado.injector.client.storage.MinioClient;
 import io.minio.ObjectWriteResponse;
@@ -34,16 +33,22 @@ public class ImageService {
         try {
             URL url = new URL(newsDTO.getUrlToImage());
             ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
+            String tmpDir = System.getProperty("java.io.tmpdir");
             String imageName = extractFileNameFromUrl(url);
-            File imgTemp = File.createTempFile(imageName, ".file");
+            File imgTemp = new File(tmpDir+File.separator+imageName);
             FileOutputStream fileOutputStream = new FileOutputStream(imgTemp);
             FileChannel fileChannel = fileOutputStream.getChannel();
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
             File uploadImage = new File(imgTemp.getParentFile(), "uploaded_" + imageName);
+
+            log.info("Image {} downloaded with success!! {}", url, uploadImage.getAbsolutePath());
+            log.info("Resizing the image file");
+
             commandExecutor.get().executeCommand("convert", imgTemp.getAbsolutePath(), "-resize", "400x",
                     uploadImage.getAbsolutePath());
 
+            log.info("Storing the image in minio");
             ObjectWriteResponse uploadObject = minioClient.uploadObject(imageName, uploadImage.getAbsolutePath());
             String imageURL = minioClient.getObjectPublicURL(imageName);
 
@@ -70,9 +75,17 @@ public class ImageService {
         }
     }
 
-    protected String extractFileNameFromUrl(URL url) throws NoSuchAlgorithmException {
+    protected String extractFileNameFromUrl(URL url) {
         String path = url.getPath();
-        return createMD5Hash(path);
+
+        path = path.substring(path.lastIndexOf('/') + 1, path.length());
+        path = path.replaceAll(" ", "");
+        path = path.toLowerCase();
+        path = path.replaceAll(":", "");
+        path = path.replaceAll("-", "_");
+        path = path.replaceAll("%", "");
+
+        return path;
     }
 
     protected String createMD5Hash(final String input) throws NoSuchAlgorithmException {

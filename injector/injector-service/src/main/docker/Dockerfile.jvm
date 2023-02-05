@@ -90,6 +90,8 @@ RUN dnf update -y
 RUN dnf repository-packages epel list
 
 RUN dnf install -y http://repo.okay.com.mx/centos/8/x86_64/release/jasper-libs-2.0.14-4.el8.x86_64.rpm
+RUN rpm -ivh https://vault.centos.org/centos/8/BaseOS/x86_64/os/Packages/libgomp-8.5.0-3.el8.x86_64.rpm
+RUN rpm -ivh https://vault.centos.org/centos/8/AppStream/x86_64/os/Packages/lcms2-2.9-2.el8.x86_64.rpm
 RUN rpm -ivh https://vault.centos.org/centos/8/AppStream/x86_64/os/Packages/LibRaw-0.19.5-3.el8.x86_64.rpm
 
 RUN microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y ImageMagick-libs \

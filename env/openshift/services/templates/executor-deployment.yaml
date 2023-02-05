@@ -81,7 +81,7 @@ spec:
             - name: TZ
               value: Europe/Madrid
           image: {{ .Values.images.executor.name}}:{{ .Values.images.executor.tag }}
-          imagePuPullPolicy: Always
+          imagePullPolicy: Always
           name: executor
           resources: {}
       imagePullSecrets:
