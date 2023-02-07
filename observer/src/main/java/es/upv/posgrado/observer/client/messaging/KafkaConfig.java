@@ -52,7 +52,7 @@ public class KafkaConfig {
         props.putIfAbsent(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ObjectMapperSerializer.class.getName());
         // Acknowledgement
         props.putIfAbsent(ProducerConfig.ACKS_CONFIG, acks);
-        props.putIfAbsent(ProducerConfig.MAX_REQUEST_SIZE_CONFIG,10485880);
+        props.putIfAbsent(ProducerConfig.MAX_REQUEST_SIZE_CONFIG,16485880);
         // Optimizations
         props.putIfAbsent(StreamsConfig.TOPOLOGY_OPTIMIZATION_CONFIG,StreamsConfig.OPTIMIZE);
 

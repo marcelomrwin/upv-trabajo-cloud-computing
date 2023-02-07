@@ -6,7 +6,7 @@ project:
 images:  
   observer:
     name: quay.io/marcelosales/observer
-    tag: 0.0.6
+    tag: 0.0.7
   injector:
     name: quay.io/marcelosales/injector
     tag: 0.0.11

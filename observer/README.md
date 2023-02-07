@@ -24,7 +24,7 @@ docker buildx build --push --platform linux/amd64,linux/arm64 --tag quay.io/marc
 
 **For Openshift**
 ```
-docker buildx build --push --platform linux/amd64 --tag quay.io/marcelosales/observer:0.0.6 -f src/main/docker/Dockerfile.jvm .
+docker buildx build --push --platform linux/amd64 --tag quay.io/marcelosales/observer:0.0.7 -f src/main/docker/Dockerfile.jvm .
 ```
 
 ### Deprecated

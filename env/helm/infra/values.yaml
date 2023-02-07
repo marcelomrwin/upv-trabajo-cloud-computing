@@ -129,7 +129,7 @@ configmaps:
     kafka_cfg_default_replication_factor: "1"
     kafka_cfg_listeners: PLAINTEXT://:9092
     kafka_cfg_log_retention_hours: "24"
-    kafka_cfg_message_max_bytes: "10485880"
+    kafka_cfg_message_max_bytes: "16485880"
     kafka_cfg_num_partitions: "3"
 
   keycloak:
